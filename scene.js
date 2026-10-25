@@ -16,7 +16,7 @@
     }
     get ready(){return this.plates.complete&&this.plates.naturalWidth>0&&this.weapon.complete&&this.weapon.naturalWidth>0;}
     resize(){const r=this.canvas.getBoundingClientRect();this.width=Math.max(1,Math.min(1280,Math.round(r.width)));this.height=Math.max(1,Math.round(r.height*this.width/Math.max(1,r.width)));this.canvas.width=this.width;this.canvas.height=this.height;}
-    project(x,y,z){const h=this.height;return {x:this.width/2+(x+this.hover*.035)*h*1.55/z,y:h*.43+(1.4-y)*h*1.55/z};}
+    project(x,y,z){const h=this.height;return {x:this.width/2+(x+this.hover*.035)*h*1.55/z,y:(this.horizon??h*.43)+(1.4-y)*h*1.55/z};}
     quad(points,fill,stroke){const p=this.ctx;p.beginPath();points.forEach(([x,y,z],i)=>{const s=this.project(x,y,z);i?p.lineTo(s.x,s.y):p.moveTo(s.x,s.y);});p.closePath();p.fillStyle=fill;p.fill();if(stroke){p.strokeStyle=stroke;p.lineWidth=1;p.stroke();}}
     room(zone,time,cleared) {
       const p=this.ctx,w=this.width,h=this.height;
@@ -62,16 +62,18 @@
     }
     layout(enemies){
       const w=this.width,h=this.height,n=enemies.length,places=n===1?[.5]:n===2?[.32,.68]:[.23,.5,.77];
+      const heightLimit=Math.max(24,Math.min(h*.56,(h-(this.labelSpace||80)-14)*.94,w/(n+.65)*1.6));
+      this.horizon=Math.max(h*.43,(this.labelSpace||80)+heightLimit*.264);
       return enemies.map((e,i)=>{
-        const height=Math.min(h*.53,w/(n+.65)*1.6)*(e.drone?.94:1),z=h*1.55*2/height,worldX=(places[i]-.5)*w*z/(h*1.55),point=this.project(worldX,0,z);
+        const height=heightLimit*(e.drone?.94:1),z=h*1.55*2/height,worldX=(places[i]-.5)*w*z/(h*1.55),point=this.project(worldX,0,z);
         return {id:e.id,x:point.x,foot:point.y,height,width:height*256/384,z,worldX};
       });
     }
     getTargets(enemies){return this.layout(enemies).map(s=>({id:s.id,left:(s.x-s.width*.44)/this.width*100,top:(s.foot-s.height*.92)/this.height*100,width:s.width*.88/this.width*100,height:s.height*.92/this.height*100}));}
     draw(state,timestamp) {
       const p=this.ctx,w=this.width,h=this.height,now=timestamp||performance.now();
-      this.room(state.zone,state.time,state.mode==='cleared'||state.mode==='won');
       const actors=this.layout(state.enemies),items=[];
+      this.room(state.zone,state.time,state.mode==='cleared'||state.mode==='won');
       // Three kinds of midground prop plates; the nearer columns frame the scene.
       for(const side of [-1,1]){
         for(const z of [7.7,12]){const pos=this.project(side*Math.min(4.6,w/(h*1.55)*6),0,z);items.push({z,draw:()=>this.plate(4,pos.x,pos.y,h*1.55*3.4/z)});}

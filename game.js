@@ -43,7 +43,7 @@
     selected:-1,target:0,enemies:[],battleReward:120,rewarded:false,time:0,shotAt:-1000,shotTarget:-1};
   const touchDevice=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
   document.documentElement.classList.toggle('touch-device',touchDevice);
-  let activeModal=null,focusBeforeModal=null,soundOn=false,audio=null,messageUntil=0;
+  let activeModal=null,focusBeforeModal=null,soundOn=false,audio=null;
   let pendingTimer=null,queuedReward=false,enemyResolutionPending=false,lastTimestamp=0;
   const scene=new BattlefieldScene($('world'));
   const alive=()=>state.enemies.filter(e=>e.hp>0);
@@ -64,8 +64,8 @@
       o.connect(g);g.connect(audio.destination);o.start();o.stop(now+.23);
     } catch {soundOn=false;updateSoundButton();}
   }
-  function notify(text, duration=2800) {
-    $('scene-message').textContent=text;$('scene-message').classList.add('visible');messageUntil=performance.now()+duration;
+  function notify(text) {
+    $('scene-message').textContent=text;$('scene-message').classList.add('visible');
   }
   function shuffle(items) {
     const list=[...items];
@@ -76,23 +76,25 @@
     const c=CARDS[id];
     const disabled=opts.disabled?'disabled':'';
     return `<button class="card ${c.type} ${state.selected===index&&!opts.reward?'selected':''} ${opts.extraClass||''}" data-card="${id}" ${opts.reward?'data-reward="'+id+'"':'data-index="'+index+'"'} ${disabled} aria-label="${c.name}, 에너지 ${c.cost}, ${c.desc}" ${!opts.reward?'aria-pressed="'+(state.selected===index)+'"':''}>
-      <span class="card-top"><span class="card-cost">${c.cost}</span><span class="card-type">${c.label}</span></span>
-      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-desc">${c.desc}</span>
-      <span class="card-bottom"><span>${opts.reward?'선택':index+1}</span><span>${opts.bottom||c.code}</span></span></button>`;
+      <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-type">${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'}</span></span>
+      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-desc">${c.desc.replace(/(\d+)/g,'<b class="effect-number">$1</b>')}</span>
+      <span class="card-bottom"><span>${opts.reward?'선택':index+1}</span><span>${opts.bottom||`에너지 ${c.cost} 사용`}</span></span></button>`;
   }
 
   function renderHand() {
     const scroll=$('hand').scrollLeft;
-    $('hand').innerHTML=state.hand.map((id,i)=>cardMarkup(id,i,{disabled:!isPlaying()||CARDS[id].cost>state.energy})).join('')||'<div class="card empty">턴을 종료해 손패 보충</div>';
+    $('hand').innerHTML=state.hand.map((id,i)=>cardMarkup(id,i,{disabled:!isPlaying()||CARDS[id].cost>state.energy,bottom:CARDS[id].cost>state.energy?'에너지 부족':undefined})).join('')||'<div class="card empty">턴을 종료해 손패 보충</div>';
     $('hand').scrollLeft=scroll;
     $('hand').querySelectorAll('[data-index]').forEach(b=>b.addEventListener('click',()=>chooseCard(Number(b.dataset.index))));
     if(state.selected>=0)$('hand').querySelector('.selected')?.scrollIntoView({block:'nearest',inline:'nearest'});
     $('hand-count').textContent=String(state.hand.length).padStart(2,'0');
     $('draw-count').textContent=state.mode==='briefing'?'7':state.draw.length;
     $('discard-count').textContent=state.discard.length;
-    $('hand-hint').textContent=state.selected>=0?`${CARDS[state.hand[state.selected]].name} 장전 · 적을 선택해 사용`:'공격 카드 → 적 선택 / 방어·전술 카드는 즉시 사용';
+    $('hand-hint').textContent=state.selected>=0?`${CARDS[state.hand[state.selected]].name} 선택 · 효과 확인 후 사용`:'카드 선택 → 효과 확인 → 사용';
   }
   function positionTargets() {
+    const scale=scene.width/Math.max(1,$('world').getBoundingClientRect().width);
+    scene.labelSpace=(Math.max(0,...[...$('enemy-targets').querySelectorAll('.enemy-caption')].map(e=>e.offsetHeight))+14)*scale;
     for(const rect of scene.getTargets(state.enemies)){
       const b=$('enemy-targets').querySelector(`[data-enemy="${rect.id}"]`);if(!b)continue;
       Object.assign(b.style,{left:rect.left+'%',top:rect.top+'%',width:rect.width+'%',height:rect.height+'%'});
@@ -100,10 +102,10 @@
   }
   function renderEnemies() {
     $('enemy-targets').innerHTML=alive().map(e=>`<button class="enemy-target ${state.target===e.id?'targeted':''}" data-enemy="${e.id}" aria-pressed="${state.target===e.id}" aria-label="${e.name}, 체력 ${e.hp}/${e.maxHp}, ${intentLabel(e)}" ${!isPlaying()?'disabled':''}>
-      <span class="enemy-caption"><span class="enemy-name">${e.name}${e.armor?` <em>장갑 ${e.armor}</em>`:''}</span><span class="enemy-hp"><i style="width:${e.hp/e.maxHp*100}%"></i></span><span class="enemy-numbers">${e.hp}<small>/${e.maxHp}</small>${e.shield?` · 방어 ${e.shield}`:''}</span><span class="intent-pill ${intentOf(e)}">${intentOf(e)==='attack'?'↘':intentOf(e)==='guard'?'◇':'◎'} ${intentLabel(e)}</span></span><span class="target-corners"></span></button>`).join('');
+      <span class="enemy-caption"><span class="enemy-ident"><span>적 ${e.id+1}</span><em>${state.target===e.id?'선택됨':'대상 선택'}</em></span><span class="enemy-name">${e.name}</span><span class="enemy-hp"><i style="width:${e.hp/e.maxHp*100}%"></i></span><span class="enemy-numbers">${e.hp}<small> / ${e.maxHp}</small><span class="enemy-traits">${e.armor?`장갑 ${e.armor}`:''}${e.shield?` 방어 ${e.shield}`:''}</span></span><span class="intent-pill ${intentOf(e)}"><i aria-hidden="true">${intentOf(e)==='attack'?'↘':intentOf(e)==='guard'?'◇':'◎'}</i>${intentOf(e)==='attack'?'공격 '+e.atk:intentOf(e)==='guard'?'방어 +6':'공격 준비'}</span></span><span class="target-corners"></span></button>`).join('');
     $('enemy-targets').querySelectorAll('[data-enemy]').forEach(b=>b.addEventListener('click',()=>{
       if(!isPlaying())return;state.target=Number(b.dataset.enemy);
-      if(state.selected>=0)fire();else {renderHUD();notify('대상 선택 완료 · 사용할 공격 카드를 고르세요.');}
+      renderHUD();
     }));positionTargets();
     $('enemy-targets').classList.toggle('hidden',state.mode!=='combat');
   }
@@ -116,13 +118,25 @@
     $('turn-number').textContent=String(state.turn).padStart(2,'0');$('loot-value').textContent=state.loot.toLocaleString();
     $('enemy-count').textContent=String(alive().length).padStart(2,'0');$('collection-count').textContent=save.cards.length;
     $('player-state').textContent=({briefing:'출정 대기',route:'진입 경로 선택',combat:state.phase==='enemy'?'적 행동 진행':'카드 행동 선택',reward:'보상 선택',cleared:'회수 경로 확보',dead:'작전 실패',won:'귀환 완료'})[state.mode];
-    $('end-turn-btn').disabled=!isPlaying();$('fire-btn').disabled=!isPlaying()||state.selected<0||state.target<0;
-    $('fire-label').textContent=state.selected>=0?CARDS[state.hand[state.selected]].name:'공격 카드 선택';
-    $('fire-target').textContent=state.target>=0?(state.enemies.find(e=>e.id===state.target)?.name||'대상 선택'):'대상 없음';
-    $('intent-text').textContent=`예고 피해 ${incomingDamage()}${state.shield?' · 내 방어 '+state.shield:''}`;
+    const chosen=CARDS[state.hand[state.selected]],target=state.enemies.find(e=>e.id===state.target);
+    $('end-turn-btn').disabled=!isPlaying();$('fire-btn').disabled=!isPlaying()||!chosen||(chosen.type==='attack'&&!target);
+    $('fire-label').textContent=chosen?chosen.name:'카드를 선택하세요';
+    $('fire-target').textContent=chosen?`에너지 ${chosen.cost} 사용`:'효과 확인 후 확정';
+    $('intent-text').textContent=`공격 ${incomingDamage()} · 내 방어 ${state.shield}`;
+    $('incoming-health').textContent=`예상 체력 감소 ${Math.max(0,incomingDamage()-state.shield)}`;
+    $('preview-target').textContent=chosen&&chosen.type!=='attack'?'나에게 사용':target?`${target.name} · 체력 ${target.hp}`:'대상 없음';
+    let preview='카드를 선택하면 효과를 확인할 수 있습니다.';
+    if(chosen?.damage&&target){const damage=damageFor(chosen,target).damage;preview=chosen.aoe?`전체 기본 ${chosen.damage} · 이 대상 ${damage}`:`피해 ${damage} · 예상 체력 ${Math.max(0,target.hp-damage)}`;}
+    if(chosen?.block)preview=`방어 +${chosen.block} · 예상 체력 감소 ${Math.max(0,incomingDamage()-state.shield-chosen.block)}`;
+    if(chosen?.heal)preview=`체력 +${Math.min(chosen.heal,80-state.hp)} 회복`;
+    if(chosen?.draw)preview=state.hand.length===8?'손패가 가득 찼습니다':`카드 ${Math.min(chosen.draw,9-state.hand.length)}장 뽑기`;
+    if(chosen?.surge)preview='체력 −3 · 에너지 +1 · 카드 +1';
+    $('action-preview').textContent=preview;
+    $('preview-cost').textContent=chosen?`비용 ${chosen.cost} / 보유 ${state.energy}`:`에너지 ${state.energy} / 3`;
     $('enemy-intent').classList.toggle('hidden',state.mode!=='combat');
     $('phase-label').textContent=state.phase==='enemy'?'적의 턴':'당신의 턴';
-    $('phase-description').textContent=state.phase==='enemy'?'예고한 행동을 실행합니다':'시간 제한 없음 · 카드와 대상을 선택하세요';
+    const shortEffect=chosen?.damage&&target?`피해 ${damageFor(chosen,target).damage} · 비용 ${chosen.cost}`:chosen?.block?`방어 +${chosen.block} · 비용 ${chosen.cost}`:chosen?.heal?`회복 +${Math.min(chosen.heal,80-state.hp)} · 비용 ${chosen.cost}`:chosen?.draw?`카드 ${chosen.draw}장 · 비용 ${chosen.cost}`:chosen?.surge?'에너지 +1 · 체력 −3':'';
+    $('phase-description').textContent=state.phase==='enemy'?'예고한 행동을 실행합니다':chosen?shortEffect:'대상 선택 → 카드 선택 → 사용';
     $('phase-banner').classList.toggle('enemy-phase',state.phase==='enemy');$('phase-banner').classList.toggle('hidden',state.mode!=='combat');
     $('extract-menu-btn').classList.toggle('hidden',state.mode!=='cleared');
     $('scene-location').textContent=`SEC.0${state.zone+1} / ${ZONES[state.zone].english}`;
@@ -130,6 +144,7 @@
     $('mission-panel').classList.toggle('hidden',state.mode==='briefing');
     document.body.classList.toggle('in-battle',state.mode==='combat');
     document.body.classList.toggle('battle-cleared',state.mode==='cleared');
+    document.body.dataset.mode=state.mode;
     $('sector-progress').querySelectorAll('span').forEach((s,i)=>{s.classList.toggle('active',i===state.zone);s.classList.toggle('completed',i<state.cleared);});
     renderHand();renderEnemies();
   }
@@ -165,7 +180,7 @@
     const templates=route==='supply'&&index?ZONES[index].enemies.slice(0,-1):ZONES[index].enemies;
     state.enemies=templates.map((e,i)=>({...e,id:i,hp:Math.round(e.hp*(route==='supply'?.85:1)),maxHp:Math.round(e.hp*(route==='supply'?.85:1)),shield:0,hitAt:0,deadAt:0,attackAt:0}));
     state.battleReward=Math.round(ZONES[index].reward*(route==='supply'?.65:1));state.target=0;prepareDeck(index===0);renderHUD();sound('card');
-    notify('모든 적의 의도가 공개됩니다. 공격 카드 → 적 선택, 또는 대상 선택 후 사격.',3500);
+    notify('대상과 카드를 선택한 뒤, 효과를 확인하고 사용 버튼으로 확정하세요.',3500);
   }
   function deploy() {
     clearTimeout(pendingTimer);enemyResolutionPending=false;queuedReward=false;closeModal();
@@ -175,10 +190,13 @@
   function chooseCard(index) {
     if(!isPlaying())return;const id=state.hand[index];if(!id)return;const c=CARDS[id];
     if(c.cost>state.energy){notify('에너지가 부족합니다. 턴 종료 후 3으로 회복됩니다.');return;}
-    if(c.type==='attack'){state.selected=index;renderHUD();sound('click');notify(`${c.name} 장전 · 적을 누르거나 사격 버튼으로 사용하세요.`,2200);}
-    else playCard(index);
+    state.selected=index;renderHUD();sound('click');
   }
-  function fire(){if(!isPlaying())return;if(state.selected<0){notify('먼저 공격 카드를 선택하세요.');return;}playCard(state.selected,state.enemies.find(e=>e.id===state.target&&e.hp>0));}
+  function fire(){if(!isPlaying())return;if(state.selected<0){notify('먼저 카드를 선택하세요.');return;}playCard(state.selected,state.enemies.find(e=>e.id===state.target&&e.hp>0));}
+  function damageFor(card,enemy){
+    const raw=Math.max(1,card.damage-(card.pierce?0:enemy.armor||0)),absorbed=card.pierce?0:Math.min(enemy.shield,raw);
+    return {absorbed,damage:raw-absorbed};
+  }
   function playCard(index,target) {
     const id=state.hand[index],c=CARDS[id];if(!c||!isPlaying()||c.cost>state.energy)return;
     if(c.type==='attack'&&!target){notify('공격할 적을 선택하세요.');return;}
@@ -193,7 +211,7 @@
     if(c.damage){
       state.target=target.id;state.shotTarget=target.id;let kills=0;
       for(const e of c.aoe?alive():[target]){
-        const raw=Math.max(1,c.damage-(c.pierce?0:e.armor||0)),absorbed=c.pierce?0:Math.min(e.shield,raw),damage=raw-absorbed;
+        const {absorbed,damage}=damageFor(c,e);
         e.shield-=absorbed;e.hp=Math.max(0,e.hp-damage);e.lastDamage=damage;e.hitAt=performance.now();
         if(!e.hp){e.deadAt=performance.now();state.kills++;state.loot+=30*(state.zone+1);kills++;}
       }
@@ -264,7 +282,7 @@
   }
   function showGuide(){
     if(activeModal&&['reward','outcome','route'].includes(activeModal))return;
-    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 02</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>공격 카드 선택 → 적을 클릭·터치하면 즉시 사용합니다. 적을 먼저 선택하고 카드를 고른 뒤 사격 버튼을 눌러도 됩니다. 방어·회복·전술 카드는 즉시 사용합니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>공격은 표시한 피해를 주고, 방어는 적에게 방어 6을 남깁니다. 조준 중인 적은 그 턴에는 공격하지 않습니다. 턴 종료 후 행동하며 내 방어는 그 턴만 유지됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 새 턴 손패 5장 · 손패 상한 8장. 뽑기 더미가 비면 버린 카드를 섞습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 사격 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
+    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 03</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>적을 눌러 대상을 선택하고 카드를 고릅니다. 오른쪽에서 비용·효과를 확인한 뒤 사용 버튼으로 확정합니다. 방어·회복·전술 카드도 같은 방식으로 사용합니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>공격은 표시한 피해를 주고, 방어는 적에게 방어 6을 남깁니다. 조준 중인 적은 그 턴에는 공격하지 않습니다. 턴 종료 후 행동하며 내 방어는 그 턴만 유지됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 새 턴 손패 5장 · 손패 상한 8장. 뽑기 더미가 비면 버린 카드를 섞습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 카드 사용 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
   }
   function showCollection() {
     if(activeModal&&['reward','outcome'].includes(activeModal))return;
@@ -282,9 +300,10 @@
     }));
   }
   function showPile(discard=false) {
-    if(!state.playing||activeModal)return;
+    if(!state.playing||(activeModal&&activeModal!=='pile'))return;
     const pile=discard?state.discard:state.draw,counts={};pile.forEach(id=>counts[id]=(counts[id]||0)+1);
-    showModal(`<button class="modal-close" data-close aria-label="카드 목록 닫기">×</button><div class="eyebrow">DECK INSPECTION</div><h2 id="modal-title">${discard?'버린 카드':'뽑기 더미'} <em>${pile.length}장</em></h2><p class="modal-copy">${discard?'뽑기 더미가 비면 이 카드들을 섞어서 다시 사용합니다.':'포함된 카드 목록입니다. 뽑히는 순서는 공개되지 않습니다.'}</p><div class="pile-list">${Object.entries(counts).map(([id,n])=>`<div class="pile-item"><b>${CARDS[id].cost}</b>${CARDS[id].name}<small>× ${n}</small></div>`).join('')||'<p class="modal-copy">카드가 없습니다.</p>'}</div><div class="modal-buttons"><button class="secondary-btn" data-close>작전 복귀</button></div>`,false,'pile');
+    showModal(`<button class="modal-close" data-close aria-label="카드 목록 닫기">×</button><div class="eyebrow">카드 더미</div><h2 id="modal-title">${discard?'버린 카드':'뽑기 더미'} <em>${pile.length}장</em></h2><div class="pile-tabs"><button data-pile="draw" class="${!discard?'active':''}">뽑기 ${state.draw.length}장</button><button data-pile="discard" class="${discard?'active':''}">버림 ${state.discard.length}장</button></div><p class="modal-copy">${discard?'뽑기 더미가 비면 이 카드들을 섞어서 다시 사용합니다.':'카드 목록이며, 뽑히는 순서는 공개되지 않습니다.'}</p><div class="pile-list">${Object.entries(counts).map(([id,n])=>`<div class="pile-item"><b>비용 ${CARDS[id].cost}</b>${CARDS[id].name}<small>× ${n}</small></div>`).join('')||'<p class="modal-copy">카드가 없습니다.</p>'}</div><div class="modal-buttons"><button class="secondary-btn" data-close>작전 복귀</button></div>`,false,'pile');
+    $('modal').querySelectorAll('[data-pile]').forEach(b=>b.addEventListener('click',()=>showPile(b.dataset.pile==='discard')));
   }
 
   function selectNextTarget(direction){
@@ -315,7 +334,7 @@
   $('viewport').addEventListener('pointerleave',()=>scene.hover=0);
   $('deploy-btn').addEventListener('click',deploy);$('end-turn-btn').addEventListener('click',endTurn);$('fire-btn').addEventListener('click',fire);
   $('extract-menu-btn').addEventListener('click',showDecision);$('help-btn').addEventListener('click',showGuide);$('collection-btn').addEventListener('click',showCollection);
-  $('draw-pile-btn').addEventListener('click',()=>showPile(false));$('discard-pile-btn').addEventListener('click',()=>showPile(true));
+  $('deck-inspect-btn').addEventListener('click',()=>showPile(false));
   function updateSoundButton(){const b=$('sound-btn');b.setAttribute('aria-pressed',String(soundOn));b.setAttribute('aria-label',soundOn?'사운드 끄기':'사운드 켜기');b.title=soundOn?'사운드 끄기':'사운드 켜기';b.querySelector('.mute-slash').classList.toggle('hidden',soundOn);}
   $('sound-btn').addEventListener('click',()=>{soundOn=!soundOn;updateSoundButton();if(soundOn)sound('click');});
   $('fullscreen-btn').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('app').requestFullscreen();}catch{notify('이 브라우저에서는 전체 화면을 지원하지 않습니다.');}});
@@ -324,7 +343,7 @@
     if(document.hidden){lastTimestamp=timestamp;requestAnimationFrame(frame);return;}
     if(timestamp-lastTimestamp<(touchDevice?1000/30:1000/60)-1){requestAnimationFrame(frame);return;}
     state.time+=Math.min(.05,(timestamp-lastTimestamp)/1000||0);lastTimestamp=timestamp;
-    if(timestamp>messageUntil)$('scene-message').classList.remove('visible');scene.draw(state,timestamp);positionTargets();requestAnimationFrame(frame);
+    scene.draw(state,timestamp);positionTargets();requestAnimationFrame(frame);
   }
   goHome();requestAnimationFrame(frame);
 })();
