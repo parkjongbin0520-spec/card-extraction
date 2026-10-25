@@ -5,7 +5,7 @@
   class BattlefieldScene {
     constructor(canvas) {
       this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.width=1;this.height=1;
-      this.hover=0;this.plates=new Image();this.plates.src='assets/field-plates.svg';
+      this.hover=0;this.look=0;this.tiles=[];this.edges=[];this.shadows=[];this.plates=new Image();this.plates.onload=()=>this.preparePlates();this.plates.src='assets/field-plates.svg';
       this.weapon=new Image();this.weapon.src='assets/weapon-plate.svg';
       this.reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
       this.texture=document.createElement('canvas');this.texture.width=this.texture.height=128;
@@ -14,9 +14,27 @@
       this.grain=this.ctx.createPattern(this.texture,'repeat');
       new ResizeObserver(()=>this.resize()).observe(canvas);this.resize();
     }
-    get ready(){return this.plates.complete&&this.plates.naturalWidth>0&&this.weapon.complete&&this.weapon.naturalWidth>0;}
+    get ready(){return this.plates.complete&&this.plates.naturalWidth>0&&this.weapon.complete&&this.weapon.naturalWidth>0&&this.tiles.length===6;}
+    preparePlates(){
+      // Bake a common key light into each transparent plate once, not every frame.
+      for(let tile=0;tile<6;tile++){
+        const image=document.createElement('canvas');image.width=256;image.height=384;const q=image.getContext('2d');
+        q.drawImage(this.plates,tile*256,0,256,384,0,0,256,384);
+        q.globalCompositeOperation='source-atop';const light=q.createLinearGradient(0,0,250,300);light.addColorStop(0,'#ffe5aa55');light.addColorStop(.45,'#ffe5aa08');light.addColorStop(1,'#0c202f55');q.fillStyle=light;q.fillRect(0,0,256,384);q.globalCompositeOperation='source-over';
+        this.tiles[tile]=image;
+        for(const [list,color] of [[this.edges,'#3c2e1e'],[this.shadows,'#08100d']]){
+          const mask=document.createElement('canvas');mask.width=256;mask.height=384;const m=mask.getContext('2d');m.drawImage(image,0,0);m.globalCompositeOperation='source-in';m.fillStyle=color;m.fillRect(0,0,256,384);list[tile]=mask;
+        }
+      }
+    }
+    castShadow(a,e){
+      const p=this.ctx,tile=e.drone?2:e.armor?1:0,mask=this.shadows[tile];if(!mask)return;
+      p.save();p.translate(a.x,a.foot);p.globalAlpha=e.drone?.17:.27;
+      // Flatten the same alpha silhouette onto the floor, away from the overhead light.
+      p.transform(1,.035,-.62,e.drone?.105:.15,0,0);p.drawImage(mask,-a.width/2,-a.height*370/384,a.width,a.height);p.restore();
+    }
     resize(){const r=this.canvas.getBoundingClientRect();this.width=Math.max(1,Math.min(1280,Math.round(r.width)));this.height=Math.max(1,Math.round(r.height*this.width/Math.max(1,r.width)));this.canvas.width=this.width;this.canvas.height=this.height;}
-    project(x,y,z){const h=this.height;return {x:this.width/2+(x+this.hover*.035)*h*1.55/z,y:(this.horizon??h*.43)+(1.4-y)*h*1.55/z};}
+    project(x,y,z){const h=this.height;return {x:this.width/2+(x+this.look*.08)*h*1.55/z,y:(this.horizon??h*.43)+(1.4-y)*h*1.55/z};}
     quad(points,fill,stroke){const p=this.ctx;p.beginPath();points.forEach(([x,y,z],i)=>{const s=this.project(x,y,z);i?p.lineTo(s.x,s.y):p.moveTo(s.x,s.y);});p.closePath();p.fillStyle=fill;p.fill();if(stroke){p.strokeStyle=stroke;p.lineWidth=1;p.stroke();}}
     room(zone,time,cleared) {
       const p=this.ctx,w=this.width,h=this.height;
@@ -57,8 +75,12 @@
     }
     plate(tile,x,foot,height,opacity=1,tilt=0){
       if(!this.plates.naturalWidth)return;const p=this.ctx,width=height*256/384;
-      p.save();p.translate(x,foot);p.rotate(tilt);p.globalAlpha=opacity;p.imageSmoothingEnabled=false;
-      p.drawImage(this.plates,tile*256,0,256,384,-width/2,-height*370/384,width,height);p.restore();
+      p.save();p.translate(x,foot);p.rotate(tilt);p.globalAlpha=opacity*Math.min(1,.77+height/this.height*.38);p.imageSmoothingEnabled=false;
+      const edge=Math.max(1,Math.min(4,height*.012));
+      if(this.edges[tile])p.drawImage(this.edges[tile],-width/2+edge,-height*370/384+edge,width,height);
+      if(this.tiles[tile])p.drawImage(this.tiles[tile],-width/2,-height*370/384,width,height);
+      else p.drawImage(this.plates,tile*256,0,256,384,-width/2,-height*370/384,width,height);
+      p.restore();
     }
     layout(enemies){
       const w=this.width,h=this.height,n=enemies.length,places=n===1?[.5]:n===2?[.32,.68]:[.23,.5,.77];
@@ -72,8 +94,11 @@
     getTargets(enemies){return this.layout(enemies).map(s=>({id:s.id,left:(s.x-s.width*.44)/this.width*100,top:(s.foot-s.height*.92)/this.height*100,width:s.width*.88/this.width*100,height:s.height*.92/this.height*100}));}
     draw(state,timestamp) {
       const p=this.ctx,w=this.width,h=this.height,now=timestamp||performance.now();
+      this.look=this.reducedMotion?0:this.look+(this.hover-this.look)*.08;
       const actors=this.layout(state.enemies),items=[];
       this.room(state.zone,state.time,state.mode==='cleared'||state.mode==='won');
+      const lamp=p.createRadialGradient(w*.28,h*.16,0,w*.32,h*.4,h*.85);lamp.addColorStop(0,'#f1cf8d22');lamp.addColorStop(.5,'#e9c27b0b');lamp.addColorStop(1,'#e9c27b00');p.fillStyle=lamp;p.fillRect(0,0,w,h);
+      for(let i=0;i<actors.length;i++)if(state.enemies[i].hp>0)this.castShadow(actors[i],state.enemies[i]);
       // Three kinds of midground prop plates; the nearer columns frame the scene.
       for(const side of [-1,1]){
         for(const z of [7.7,12]){const pos=this.project(side*Math.min(4.6,w/(h*1.55)*6),0,z);items.push({z,draw:()=>this.plate(4,pos.x,pos.y,h*1.55*3.4/z)});}
@@ -91,9 +116,14 @@
           if(selected&&state.mode==='combat'){
             p.strokeStyle=state.selected>=0?'#e6a867':'#c0c795';p.lineWidth=1.5;p.setLineDash([6,5]);p.beginPath();p.ellipse(a.x,a.foot,a.width*.54,a.height*.065,0,0,Math.PI*2);p.stroke();p.setLineDash([]);
           }
-          const bob=this.reducedMotion?0:e.drone?Math.sin(now*.0016+i)*5:Math.sin(now*.001+i)*1.2;
+          const bob=this.reducedMotion?0:e.drone?Math.sin(now*.0016+i)*5:0;
+          const breath=this.reducedMotion?0:Math.sin(now*.00115+i)*.008,idleTilt=this.reducedMotion?0:Math.sin(now*.0009+i)*.008;
           p.save();p.translate(0,a.foot);p.scale(1,1-death*.85);p.translate(0,-a.foot);
-          this.plate(e.drone?2:e.armor?1:0,a.x+shake,a.foot+bob,a.height*(1+attack*.1),1-death,(this.reducedMotion?0:attack*.025)*(i%2?1:-1));p.restore();
+          this.plate(e.drone?2:e.armor?1:0,a.x+shake,a.foot+bob,a.height*(1+breath+(this.reducedMotion?0:attack*.1)),1-death,idleTilt+(this.reducedMotion?0:attack*.025)*(i%2?1:-1));p.restore();
+          if(state.mode==='combat'&&e.hp>0){
+            const charging=e.pattern[(state.turn-1)%e.pattern.length]==='charge',pulse=this.reducedMotion?1:.7+Math.sin(now*.004+i)*.3;
+            if(charging){const ey=a.foot-a.height*(e.drone?.585:.815),r=Math.max(5,a.height*.065);const glow=p.createRadialGradient(a.x,ey,0,a.x,ey,r);glow.addColorStop(0,`rgba(255,192,92,${.36*pulse})`);glow.addColorStop(1,'#ffbd6600');p.fillStyle=glow;p.fillRect(a.x-r,ey-r,r*2,r*2);}
+          }
           if(hit&&e.hp>0){p.fillStyle='#f3d2a3';p.font=`bold ${Math.max(17,h*.035)}px monospace`;p.textAlign='center';p.fillText(`−${e.lastDamage}`,a.x+a.width*.42,a.foot-a.height*.6-(1-hit)*25);p.textAlign='left';}
           if(e.shield&&e.hp>0){p.strokeStyle='#d4d9b477';p.lineWidth=3;p.beginPath();p.ellipse(a.x,a.foot-a.height*.42,a.width*.51,a.height*.42,0,0,Math.PI*2);p.stroke();}
         }});
