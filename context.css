@@ -449,3 +449,179 @@ main { display:flex; flex-direction:column; }
 /* Preview attaches below the HUD without moving the enemy or its drop area. */
 .enemy-preview { position:absolute; top:calc(100% + 4px); left:-1px; width:calc(100% + 2px); padding:6px 8px; border:1px solid #d4b67a; border-radius:3px; background:#26321cf5; box-shadow:0 3px 9px #0006; }
 .preview-unavailable .enemy-preview { background:#392c23f5; border-color:#c48476; }
+
+/* The lower command tray owns player resources; the scene stays unobstructed. */
+.combat-hud { height:48px; flex-basis:48px; padding:3px 24px; gap:20px; flex-wrap:nowrap; align-content:center; background:#1b2425; border-color:#66716a; }
+.combat-hud .phase-banner { order:1; flex:1; }
+.combat-hud .enemy-intent { order:2; }
+.combat-hud .mission-panel { order:0; }
+.deck-zone { grid-template-columns:216px minmax(0,1fr) 176px; grid-template-rows:minmax(0,1fr); gap:20px; background:repeating-linear-gradient(0deg,#b4bca403 0 1px,transparent 1px 5px),linear-gradient(100deg,#25302c,#172324 65%,#24302d); border-color:#7f8871; }
+#player-status { grid-column:1; grid-row:1; align-self:end; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:auto auto auto; align-content:start; align-items:center; gap:10px 6px; position:relative; height:auto; min-height:160px; width:100%; max-width:none; padding:13px 12px; margin:0 0 4px; border:1px solid #718174; border-radius:4px; background:#131f20e8; box-shadow:2px 3px 0 #080f0f; }
+#player-status .player-health { grid-column:1/-1; min-width:0; width:100%; max-width:none; }
+#player-status .health-label { padding:0 0 6px; margin:0; }
+#player-status .health-label strong { font-size:28px; }
+#player-status .health-label em { font-size:13px; }
+#player-status .health-track { display:block; width:100%; height:9px; position:static; margin:0; background:#080f10; }
+#player-status .armor-label { justify-content:center; gap:5px; }
+#player-status .armor-label > svg { width:18px; height:18px; }
+#player-status .armor-label > span { gap:2px; }
+#player-status .armor-label strong { font-size:12px; }
+#player-status .armor-label b { font-size:24px; }
+#player-status .shield-label,#player-status .energy-label { min-width:0; gap:2px 3px; padding:0; }
+#player-status .shield-label > svg,#player-status .energy-label > svg { width:16px; height:16px; }
+#player-status .resource-name,#player-status .armor-label small { font-size:12px; }
+#player-status .shield-label strong,#player-status .energy-label > b { font-size:28px; }
+.status-effects { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:4px; font-size:12px; line-height:1.4; color:#d9b49c; max-height:38px; overflow:auto; }
+.status-effects:empty { display:none; }
+.status-effects > span { padding:2px 5px; border:1px solid #9f78624d; background:#583b273b; border-radius:2px; }
+.hand-area { grid-column:2; grid-row:1; }
+.turn-controls { grid-column:3; grid-row:1; padding:0 0 4px; gap:7px; }
+.utility-actions { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.bag-btn,.reroll-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; position:relative; width:100%; min-width:0; min-height:64px; padding:5px; color:#dce2cb; border:1px solid #788875; border-radius:4px; background:linear-gradient(135deg,#374238,#26342e); box-shadow:0 3px 0 #101d18; touch-action:manipulation; font:600 13px var(--sans); }
+.bag-btn > svg { width:35px; height:35px; stroke-width:1.65; fill:#a9b18c18; color:#d4ce9e; }
+.reroll-btn > svg { width:22px; height:22px; color:#c1cca9; }
+.reroll-btn small { display:block; margin-top:2px; font-size:11px; line-height:1.1; color:#b6c3a5; white-space:nowrap; }
+.bag-btn:hover,.reroll-btn:hover:not(:disabled) { border-color:#c8bc86; background:#45513e; }
+.reroll-btn:disabled { opacity:.5; filter:saturate(.4); cursor:default; }
+.hand .card-risk { display:block; flex:0 0 auto; margin-top:5px; color:#914b34; font-size:14px; line-height:1.2; font-weight:600; word-break:keep-all; }
+.hand .card-top,.hand .card-name,.hand .card-brief { flex-shrink:0; }
+.hand .card:has(.card-risk) .card-art { display:none; }
+.hand .card-risk:empty { display:none; }
+.hand .card-art { min-height:18px; }
+.drop-effect-preview { position:absolute; z-index:3; bottom:calc(100% + 9px); left:0; width:max-content; min-width:170px; max-width:min(300px,calc(100vw - 24px)); padding:10px 12px; border:1px solid #d3bd88; border-radius:4px; background:#263126f5; box-shadow:0 4px 14px #0006; color:#f3e7c9; font:600 15px/1.5 var(--sans); white-space:pre-line; text-align:left; pointer-events:none; }
+#bag-preview { left:auto; right:0; min-width:160px; }
+.drag-shade { position:fixed; inset:0; z-index:19; background:#030b0b80; pointer-events:none; }
+.drop-eligible { outline:2px solid #d2cd90; outline-offset:5px; }
+.drop-hover { outline:3px solid #f2cf8d!important; outline-offset:5px; }
+#player-status.drop-hover,.bag-btn.drop-hover { background:#414d31; border-color:#efd49a; }
+.dragging-card .card-grip { cursor:grabbing; }
+.drag-ghost { z-index:25; }
+.drag-ghost .card:has(.card-risk) .card-art { display:none; }
+.drag-ghost .card-risk { display:block; margin-top:4px; color:#914b34; font:600 11px/1.2 var(--sans); }
+.drag-status { z-index:26; }
+.inventory-modal { position:absolute; left:12px; top:12px; bottom:12px; width:min(460px,calc(100vw - 24px)); max-width:none; max-height:none; height:auto; margin:0; padding:24px; border:1px solid #87927d; border-radius:5px; background:linear-gradient(145deg,#24312d,#131f21); overflow:auto; }
+.inventory-modal .modal-copy { font-size:15px; }
+.inventory-modal .pile-list { display:flex; flex-direction:column; gap:8px; }
+.inventory-modal .pile-item { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px; font-size:16px; border:1px solid #64756a; background:#101c1dbb; }
+.inventory-modal .pile-item small { margin-left:auto; }
+.inventory-modal .pile-item > span { display:flex; flex:1; min-width:0; flex-direction:column; gap:4px; }
+.inventory-modal .pile-item > span small { margin-left:0; font-size:12px; color:#b5c5a6; }
+.inventory-modal .inventory-card { border:1px solid #687b67; padding:12px; margin-block:8px; background:#152320; }
+.inventory-modal .inventory-card h3 { font-size:17px; margin:0 0 6px; }
+.inventory-modal .inventory-card p { margin:0; font-size:14px; color:#bdcbb1; line-height:1.5; }
+@media(min-width:1600px) {
+  .combat-hud { height:50px; flex-basis:50px; }
+  .deck-zone { grid-template-columns:238px minmax(0,1fr) 194px; }
+  #player-status { padding:15px; min-height:174px; }
+  #player-status .health-label strong { font-size:33px; }
+  #player-status .resource-name,#player-status .armor-label small { font-size:14px; }
+  #player-status .shield-label strong,#player-status .energy-label > b { font-size:31px; }
+}
+@media(min-width:801px) and (max-width:1250px) {
+  .deck-zone { grid-template-columns:174px minmax(0,1fr) 142px; gap:14px; padding-inline:16px; }
+  #player-status { padding:11px 9px; }
+  #player-status .armor-label > svg,#player-status .shield-label > svg,#player-status .energy-label > svg { display:none; }
+  #player-status .resource-name,#player-status .armor-label small { font-size:11px; }
+}
+@media(max-width:800px) {
+  .combat-hud { height:42px; flex-basis:42px; padding:3px 12px; gap:12px; }
+  .combat-hud .phase-banner { flex:1; }
+  .combat-hud .enemy-intent { min-height:30px; }
+  .deck-zone { --deck-height:286px; height:var(--deck-height); flex-basis:var(--deck-height); grid-template-columns:minmax(0,1fr) 90px; grid-template-rows:72px minmax(0,1fr); gap:8px; padding:8px 10px; }
+  #player-status { grid-column:1/-1; grid-row:1; grid-template-columns:minmax(104px,1.6fr) repeat(3,minmax(38px,.7fr)); grid-template-rows:46px auto; gap:2px 8px; height:72px; min-height:0; padding:6px 8px; margin:0; align-self:stretch; }
+  #player-status .player-health { grid-column:1; grid-row:1; min-width:0; }
+  #player-status .health-label { padding-bottom:4px; gap:3px; }
+  #player-status .health-label strong { font-size:23px; }
+  #player-status .health-label em { font-size:11px; }
+  #player-status .health-label .resource-name { display:none; }
+  #player-status .health-icon { font-size:16px; }
+  #player-status .health-track { height:7px; }
+  #player-status .armor-label { grid-column:2; grid-row:1; }
+  #player-status .shield-label { grid-column:3; grid-row:1; }
+  #player-status .energy-label { grid-column:4; grid-row:1; }
+  #player-status .armor-label > svg,#player-status .shield-label > svg,#player-status .energy-label > svg { display:none; }
+  #player-status .resource-name,#player-status .armor-label small { font-size:11px; }
+  #player-status .armor-label strong { font-size:12px; }
+  #player-status .armor-label b { font-size:22px; }
+  #player-status .shield-label strong,#player-status .energy-label > b { font-size:25px; }
+  #status-effects { grid-column:1/-1; grid-row:2; max-height:18px; flex-wrap:nowrap; overflow:auto; white-space:nowrap; font-size:11px; line-height:1.2; }
+  #status-effects > span { padding:1px 4px; }
+  .hand-area { grid-column:1; grid-row:2; }
+  .hand-heading { flex-basis:24px; height:24px; }
+  .hand { padding-top:6px; }
+  .turn-controls { grid-column:2; grid-row:2; display:flex; flex-direction:column; justify-content:flex-end; gap:4px; padding:0 0 3px; }
+  .utility-actions { display:flex; flex-direction:column; gap:4px; }
+  .bag-btn,.reroll-btn { flex-direction:row; gap:5px; min-height:44px; height:44px; padding:3px; font-size:13px; }
+  .bag-btn > svg { width:27px; height:27px; }
+  .reroll-btn > svg { width:18px; height:18px; }
+  .reroll-btn small { font-size:9px; margin-top:1px; }
+  .battle-actions { min-height:44px; }
+  .fire-action,.end-turn-btn { min-height:44px; height:44px; }
+  .hand .card-risk { font-size:13px; margin-top:4px; }
+  .hand .card-art { min-height:12px; margin-bottom:2px; }
+  .hand .card-art svg { max-height:30px; }
+  .drop-effect-preview { min-width:150px; font-size:14px; padding:8px 10px; }
+  .inventory-modal { left:8px; top:8px; bottom:8px; width:min(420px,calc(100vw - 16px)); padding:20px 16px; }
+}
+@media(max-width:560px) and (max-height:700px) and (orientation:portrait) {
+  .deck-zone { --deck-height:276px; grid-template-rows:64px minmax(0,1fr); }
+  #player-status { height:64px; grid-template-rows:42px auto; padding:4px 7px; }
+  .hand .card-risk { font-size:12px; }
+  .hand .card-art { min-height:8px; }
+}
+@media(max-width:350px) {
+  #player-status { grid-template-columns:minmax(94px,1.5fr) repeat(3,minmax(34px,.7fr)); gap:2px 5px; }
+  #player-status .health-label strong { font-size:22px; }
+  #player-status .health-label em { font-size:10px; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1200px) {
+  main { --side-width:260px; position:relative; display:grid; grid-template-columns:minmax(0,1fr) var(--side-width); grid-template-rows:42px minmax(0,1fr); padding-bottom:66px; }
+  .combat-hud { grid-column:1/-1; grid-row:1; height:42px; padding:3px 12px; }
+  .combat-hud .phase-banner { display:flex!important; flex:1; }
+  .viewport { grid-column:1; grid-row:2; }
+  .deck-zone { position:static; grid-column:2; grid-row:2; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; height:auto; margin-bottom:-66px; padding:7px 9px; border:0; border-left:3px solid #71806b; gap:5px; }
+  #player-status { position:absolute; bottom:7px; left:9px; width:calc(100% - var(--side-width) - 18px); height:52px; grid-template-columns:minmax(94px,1.5fr) repeat(3,minmax(34px,.7fr)); grid-template-rows:36px auto; padding:3px 8px; gap:0 8px; min-height:0; background:#142120; }
+  #player-status .player-health { grid-column:1; grid-row:1; }
+  #player-status .armor-label { grid-column:2; grid-row:1; }
+  #player-status .shield-label { grid-column:3; grid-row:1; }
+  #player-status .energy-label { grid-column:4; grid-row:1; }
+  #player-status .armor-label > svg,#player-status .shield-label > svg,#player-status .energy-label > svg { display:none; }
+  #player-status .health-label .resource-name { display:none; }
+  #player-status .health-label { padding-bottom:2px; }
+  #player-status .health-label strong { font-size:23px; }
+  #player-status .health-track { height:6px; }
+  #player-status .armor-label b { font-size:21px; }
+  #player-status .shield-label strong,#player-status .energy-label > b { font-size:23px; }
+  #player-status .resource-name,#player-status .armor-label small { font-size:10px; }
+  #status-effects { font-size:10px; max-height:14px; line-height:1; }
+  .hand-area { grid-column:1; grid-row:1; }
+  .hand .card { height:calc(100% - 8px); max-height:192px; }
+  .hand .card-art { display:flex; min-height:10px; }
+  .hand .card-risk { margin-top:3px; font-size:12px; }
+  .hand .card-name { margin-top:0; }
+  .turn-controls { grid-column:1; grid-row:2; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:44px 44px; gap:5px; padding:0; }
+  .utility-actions { display:contents; }
+  .bag-btn,.reroll-btn { min-height:44px; height:44px; }
+  .battle-actions { min-height:44px; }
+  .fire-action,.end-turn-btn { min-height:44px; height:44px; }
+  .drop-effect-preview { min-width:140px; max-width:calc(100vw - var(--side-width) - 24px); font-size:13px; }
+  .inventory-modal { width:min(400px,calc(100vw - 16px)); }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px) {
+  main { --side-width:224px; }
+  #player-status { gap:0 6px; }
+  .hand .card-art { display:none; }
+  .hand .card-name { margin-top:4px; }
+}
+@media(orientation:landscape) and (max-height:360px) and (max-width:1200px) {
+  .hand .card { height:calc(100% - 1px); padding:4px 6px; }
+  .hand .card-top { min-height:18px; }
+  .hand .card-cost b { font-size:18px; line-height:1; }
+  .hand .card-name { font-size:13px; line-height:1.1; margin:1px 0 2px; }
+  .hand .card-brief { display:block; font-size:12px; line-height:1.05; }
+  .hand .card-brief .combat-keyword:first-child { font-size:17px; }
+  .hand .card-risk { font-size:11px; line-height:1.1; margin-top:2px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .drag-ghost { transform:none; }
+}
