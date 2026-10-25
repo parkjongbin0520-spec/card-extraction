@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="500" viewBox="0 0 640 500">
+<defs><linearGradient id="m" x2=".8" y2="1"><stop stop-color="#c4b38c"/><stop offset=".45" stop-color="#73765b"/><stop offset="1" stop-color="#333f32"/></linearGradient><linearGradient id="g" x2=".8" y2="1"><stop stop-color="#747b59"/><stop offset="1" stop-color="#303d2e"/></linearGradient><pattern id="w" width="23" height="17" patternUnits="userSpaceOnUse"><path d="m3 6 7-2m7 8 3-1" stroke="#e6d9b0" stroke-opacity=".2"/><path d="m4 15 6-1" stroke="#121f18" stroke-opacity=".3"/></pattern></defs>
+<g stroke="#20291f" stroke-width="7" stroke-linejoin="round">
+<path d="m247 500 3-132 50-86 57 16 44 202Z" fill="url(#g)"/><path d="m298 282 29-24 47 52 40 87-30 62-46-64-42-35Z" fill="#303e2e"/>
+<path d="m411 500-41-125-43-53 25-48 56 23 39 77 158 126Z" fill="url(#g)"/>
+<path d="m276 355 19-68 43-9 30 46-38 60Z" fill="#58654a"/>
+<path d="m308 310 27-25 41 29-1 39-34 8Z" fill="#343f30"/>
+<path d="m323 291-92-95L91 91l-3-24 28-24 27 8 125 91 137 72 57 71-1 56-58 29Z" fill="#303d31"/>
+<path d="m90 67 27-24 26 9 14 39-29 24-37-25Z" fill="url(#m)"/>
+<path d="m102 67 15-12 15 7 5 23-13 11-19-14Z" fill="#15251c"/>
+<path d="m151 91 133 92 128 50 24 43-68-10-131-64-90-83Z" fill="url(#m)"/>
+<path d="m224 154 88 49 49 56-70-24-70-55Z" fill="#4f6347"/>
+<path d="m280 216 82 39 12 30-68-25-34-25Z" fill="#9e9e70"/>
+<path d="m372 281 75 10 8 51-59-3-33-25Z" fill="#1f3024"/>
+<path d="m306 268 16 51 32 23 15-50Z" fill="#222f24"/>
+<path d="m174 119 35-3 18 39-32 8Z" fill="#1c2d23"/>
+<path d="m189 137-15-72 31-7 39 50-13 47-13-8 6-36-24-32-9 1 10 50Z" fill="#3c503b" stroke="#a3ae85" stroke-width="4"/>
+<path d="m194 97 7-2 3 10-7 1Z" fill="#d9e8aa" stroke="none"/>
+<path d="m374 273 51 8-1 8-44-5Z" fill="#da8b4e" stroke-width="2"/>
+<path d="m235 185 11 7 3 19-10-7Zm20 12 11 7 3 19-10-7Zm20 12 11 7 3 19-10-7Z" fill="#1d3022" stroke="none"/>
+<path d="m88 67 28-24 28 9 124 90 137 72 57 71-1 56-58 29-80-79-92-95L91 91Z" fill="url(#w)" stroke="none"/>
+<path d="m264 442 29-8 34 19m113-43 34 30 11 17" fill="none" stroke="#a5aa7c" stroke-width="4"/>
+</g></svg>

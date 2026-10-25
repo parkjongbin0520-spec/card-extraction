@@ -4,10 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#101713">
+  <meta name="theme-color" content="#151815">
   <title>DEAD HAND — 카드 익스트랙션</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='5' fill='%23fb8149'/%3E%3Cpath d='m11 8 18 24M29 8 11 32' stroke='%23101713' stroke-width='3'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="battle.css?v=2">
+  <link rel="preload" as="image" href="assets/field-plates.svg">
 </head>
 <body>
   <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -25,7 +27,7 @@
   <div id="app">
     <header class="topbar">
       <a class="brand" href="./" aria-label="데드 핸드 시작 화면"><span class="brand-mark">Ⅹ</span><span>DEAD<span class="brand-light">HAND</span><small>TACTICAL CARD EXTRACTION</small></span></a>
-      <div class="header-divider"></div><span class="build-label">PLAYABLE PROTOTYPE <span>01.04</span></span>
+      <div class="header-divider"></div><span class="build-label">PLAYABLE PROTOTYPE <span>02.00</span></span>
       <nav class="top-actions" aria-label="게임 메뉴">
         <button id="collection-btn" class="nav-btn"><svg><use href="#i-cards"/></svg><span>카드 보관함</span><span id="collection-count" class="tiny-badge">0</span></button>
         <button id="help-btn" class="nav-btn"><span class="help-symbol">?</span><span>플레이 가이드</span></button>
@@ -42,41 +44,32 @@
         <span class="connection"><i></i> 오프라인 실행 가능</span>
       </section>
 
-      <section class="viewport" id="viewport" aria-label="1인칭 탐사 화면">
-        <canvas id="world" aria-label="폐쇄구역 1인칭 게임 화면"></canvas>
+      <section class="viewport" id="viewport" aria-label="고정 시점 카드 전투 무대">
+        <canvas id="world" aria-label="둠 분위기의 2.5D 폐쇄구역 전투 공간"></canvas>
         <div class="scene-grain"></div>
-        <div class="scene-topline"><span>ZONE 07 / RESTRICTED AREA</span><span id="scene-coordinates">N 37° 33′ · E 126° 58′</span></div>
-
+        <div class="scene-topline"><span id="scene-location">SEC.01 / THE PERIMETER</span><span>FIXED VIEW · TURN-BASED COMBAT</span></div>
         <div id="briefing" class="briefing">
           <div class="eyebrow"><span></span> 덱을 장전하고, 살아 돌아와라.</div>
           <h1>EVERY CARD.<br><span>YOUR LAST.</span></h1>
-          <p class="briefing-copy">한 발의 사격도, 한 번의 방어도 카드로 결정된다.<br>폐쇄구역에 진입해 전리품을 확보하라.<br>더 깊이 들어갈 것인가. 여기서 돌아갈 것인가.</p>
+          <p class="briefing-copy">적의 의도는 공개되어 있다.<br>카드로 다음 한 수를 결정하고,<br>전리품을 챙겨 살아 돌아와라.</p>
           <div class="briefing-facts"><span><b>03</b> 탐사 구역</span><span><b>12</b> 기본 덱</span><span><b>∞</b> 판단의 시간</span></div>
-          <button id="deploy-btn" class="primary-btn deploy">작전 투입 <svg><use href="#i-arrow"/></svg></button>
-          <div class="briefing-note"><span class="key">W A S D / 방향 버튼</span> 이동 <span class="key">DRAG</span> 조준 <span class="note-break">실시간 탐사 · 턴제 카드 전투</span></div>
+          <button id="deploy-btn" class="primary-btn deploy">진입 경로 선택 <svg><use href="#i-arrow"/></svg></button>
+          <div class="briefing-note">고정 시점 · 턴제 전투 <span class="note-break">카드를 고르고 적을 터치하세요.</span></div>
         </div>
-
-        <aside class="mission-panel hidden" id="mission-panel">
-          <div class="panel-kicker">MISSION BRIEF <span>↗</span></div>
-          <h2 id="zone-name">외곽 경계</h2><p id="zone-description">버려진 검문소. 경계병을 무력화하고 회수 단말에 도달하세요.</p>
-          <div class="objective"><span id="objective-marker">◇</span><div><small>현재 목표</small><strong id="objective-text">구역의 적을 처치하세요</strong></div></div>
-          <div class="mission-stat"><span>남은 적</span><b id="enemy-count">02</b></div>
-          <div class="mission-stat"><span>위험 수준</span><b id="danger-level" class="orange-text">낮음 / I</b></div>
-          <div class="loot-box"><svg><use href="#i-box"/></svg><div><small>미확정 전리품</small><strong><span id="loot-value">0</span><em> CR</em></strong></div><span class="loot-lock">미회수</span></div>
-          <p class="risk-note">귀환해야 전리품이 확정됩니다.<br>실패해도 기본 덱은 유지됩니다.</p>
+        <aside class="mission-panel hidden" id="mission-panel" aria-label="구역과 전리품">
+          <div class="panel-kicker">SECTOR <b id="danger-level">I / 경계</b></div>
+          <h2 id="zone-name">외곽 경계</h2>
+          <div class="field-stats"><span>남은 적 <b id="enemy-count">02</b></span><span>미확정 전리품 <b><span id="loot-value">0</span> CR</b></span></div>
         </aside>
-
-        <div class="enemy-intent hidden" id="enemy-intent"><span class="enemy-indicator"></span><div><small>ENEMY INTENT</small><strong id="intent-text">턴 종료 시 공격</strong></div><span class="intent-icon">↘</span></div>
-        <div class="sector-stamp" id="sector-stamp"><span>THE PERIMETER</span><strong>폐쇄구역 <em>07</em></strong><small>NO SIGNAL. NO SECOND CHANCES.</small></div>
-        <div id="combat-banner" class="combat-banner hidden"><span class="orange-text">●</span> <strong>전투 접촉</strong><span>당신이 턴을 끝내기 전까지 적은 공격하지 않습니다.</span></div>
-        <div id="crosshair" class="crosshair hidden"><span></span><i></i><b></b><em></em></div>
-        <div id="target-label" class="target-label"></div>
-        <div id="interaction" class="interaction hidden"><span class="key">E</span><span>회수 단말 접속</span><button id="interact-btn">접속 →</button></div>
+        <div class="enemy-intent hidden" id="enemy-intent"><span class="enemy-indicator"></span><div><small>END OF TURN / 적의 의도</small><strong id="intent-text">예고 피해 6</strong></div></div>
+        <div class="sector-stamp" id="sector-stamp"><span>THE PERIMETER</span><strong>폐쇄구역 <em>07</em></strong><small>YOUR HAND IS YOUR WEAPON.</small></div>
+        <div id="enemy-targets" class="enemy-targets hidden" role="group" aria-label="전투 대상 선택"></div>
+        <div id="phase-banner" class="phase-banner hidden"><span class="phase-dot"></span><b id="phase-label">당신의 턴</b><span id="phase-description">시간 제한 없음 · 카드와 대상을 선택하세요</span></div>
+        <div class="battle-actions">
+          <button id="fire-btn" class="fire-action" disabled><svg><use href="#i-crosshair"/></svg><span><strong id="fire-label">공격 카드 선택</strong><small id="fire-target">대상 선택</small></span><b>사격 ↗</b></button>
+          <button id="extract-menu-btn" class="primary-btn hidden"><svg><use href="#i-exit"/></svg> 철수 / 다음 구역 결정</button>
+        </div>
         <div id="scene-message" class="scene-message" role="status" aria-live="polite"></div>
-        <div class="compass"><span>W</span><i></i><span>NW</span><i></i><b id="heading">N</b><i></i><span>NE</span><i></i><span>E</span></div>
-        <div id="minimap-wrap" class="minimap-wrap hidden"><div><span>LOCAL MAP</span><span id="map-sector">SEC.01</span></div><canvas id="minimap" width="150" height="170" aria-label="현재 구역 지도"></canvas><div class="map-legend"><i></i> 나 <i></i> 적 <i></i> 회수</div></div>
-        <div id="touch-controls" class="touch-controls hidden" aria-label="이동 조작"><button data-key="arrowleft" aria-label="왼쪽 회전">↶</button><button data-key="w" aria-label="앞으로 이동">↑</button><button data-key="arrowright" aria-label="오른쪽 회전">↷</button><button data-key="a" aria-label="왼쪽 이동">←</button><button data-key="s" aria-label="뒤로 이동">↓</button><button data-key="d" aria-label="오른쪽 이동">→</button></div>
-        <button id="touch-fire-btn" class="touch-fire hidden" disabled aria-label="선택한 공격 카드로 사격"><svg><use href="#i-crosshair"/></svg><strong>사격</strong><small>카드 선택</small></button>
         <div id="damage-flash" class="damage-flash"></div>
       </section>
 
@@ -88,13 +81,14 @@
           <div class="shield-label"><svg><use href="#i-shield"/></svg> 방어 <strong id="shield-value">0</strong><span>이번 턴</span></div>
           <div class="energy-label"><svg><use href="#i-bolt"/></svg><span>에너지</span><div id="energy-pips"><i></i><i></i><i></i></div><b id="energy-value">3/3</b></div>
         </div>
-        <div class="hand-area"><div class="hand-heading"><span>YOUR HAND <b id="hand-count">05</b></span><span id="hand-hint">공격 카드를 선택한 뒤 적을 클릭해 사격</span><span class="swipe-hint">← 카드 넘기기 →</span></div><div id="hand" class="hand"></div></div>
+        <div class="hand-area"><div class="hand-heading"><span>YOUR HAND <b id="hand-count">05</b></span><span id="hand-hint">공격 카드 → 적 선택 / 방어·전술 카드는 즉시 사용</span><span class="swipe-hint">← 카드 넘기기 →</span></div><div id="hand" class="hand"></div></div>
         <div class="turn-controls"><div class="turn-label">PLAYER TURN <strong id="turn-number">01</strong></div><button id="end-turn-btn" class="end-turn-btn" disabled><span>턴 종료</span><svg><use href="#i-arrow"/></svg></button><span class="turn-shortcut"><span class="key">SPACE</span> 다음 턴 · 손패 보충</span><div class="pile-counts"><button id="draw-pile-btn" title="뽑기 더미 보기"><svg><use href="#i-cards"/></svg><b id="draw-count">7</b><span>뽑기</span></button><button id="discard-pile-btn" title="버린 카드 보기"><svg><use href="#i-cards"/></svg><b id="discard-count">0</b><span>버림</span></button></div></div>
       </section>
     </main>
-    <footer><span><i></i> ALL SYSTEMS OPERATIONAL</span><span class="footer-controls"><b>WASD</b> 이동 <b>← → / 드래그</b> 조준 <b>1–5</b> 카드 선택 <b>F / 클릭</b> 사용 <b>E</b> 상호작용</span><span>EXTRACT. OR LOSE IT ALL. <b>↗</b></span></footer>
+    <footer><span><i></i> ALL SYSTEMS OPERATIONAL</span><span class="footer-controls"><b>1–8</b> 카드 <b>← →</b> 대상 <b>F / ENTER</b> 사격 <b>SPACE</b> 턴 종료</span><span>EXTRACT. OR LOSE IT ALL. <b>↗</b></span></footer>
   </div>
   <div id="modal-backdrop" class="modal-backdrop hidden"><section id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1"></section></div>
-  <script src="game.js"></script>
+  <script src="scene.js?v=2"></script>
+  <script src="game.js?v=2"></script>
 </body>
 </html>

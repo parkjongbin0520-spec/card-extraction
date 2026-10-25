@@ -1,0 +1,275 @@
+/* Diorama palette, actor plates and the physical card tray. */
+:root { --bg:#151815; --panel:#20271e; --line:#4c513b; --muted:#a5a58b; --text:#e8dfc5; --orange:#dd9159; --green:#bdc799; --red:#bd5842; }
+body { background:#10150f; }
+.topbar { background:#181e17; border-bottom-color:#595b3f; }
+.brand small, .build-label, .connection { color:#a4ad8d; }
+.operation-bar { background:#262d21; border-bottom-color:#666a49; }
+.scene-grain { opacity:.035; }
+.viewport { background:#343d2c; }
+#world { image-rendering:pixelated; }
+.scene-topline { z-index:2; top:15px; color:#c3c3a3; opacity:.7; font-size:8px; }
+.briefing { z-index:5; }
+.briefing-copy { color:#c0c5ad; }
+.briefing-note { color:#afb89b; font-size:10px; letter-spacing:.5px; }
+.sector-stamp { z-index:2; }
+.mission-panel { top:46px; left:24px; width:182px; padding:14px 16px; background:#1d281ee8; border:1px solid #9a9c6955; box-shadow:3px 3px 0 #0c130d66; backdrop-filter:blur(4px); }
+.panel-kicker { font-size:8px; letter-spacing:1.5px; color:#adb798; }
+.panel-kicker b { font-size:8px; font-weight:400; color:#d8b47c; letter-spacing:0; }
+.mission-panel h2 { margin:10px 0 13px; font-size:22px; color:#e7e1c8; }
+.field-stats { display:grid; gap:9px; }
+.field-stats > span { display:flex; align-items:center; justify-content:space-between; font-size:9px; color:#a7b090; }
+.field-stats b { color:#d4dbaf; font:13px var(--mono); }
+.enemy-intent { top:46px; right:24px; background:#30291ee8; border:1px solid #a5824b88; padding:13px 15px; }
+.enemy-intent strong { color:#e4ba8a; font-size:12px; }
+.enemy-indicator { background:#d59153; }
+.enemy-targets { position:absolute; inset:0; z-index:4; pointer-events:none; }
+.enemy-target { position:absolute; padding:0; border:0; background:transparent; pointer-events:auto; color:var(--text); border-radius:7px; touch-action:manipulation; }
+.enemy-target:disabled { cursor:default; }
+.enemy-caption { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:146px; display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center; text-shadow:0 2px 4px #0e160c; pointer-events:none; }
+.enemy-name { font-size:13px; color:#e9e3cc; font-weight:600; letter-spacing:.4px; white-space:nowrap; }
+.enemy-name em { font-size:9px; color:#bdbd93; font-style:normal; font-weight:400; }
+.enemy-hp { height:4px; width:93px; background:#262e21; border:1px solid #a9ad7b66; box-shadow:0 1px 4px #111a0d; }
+.enemy-hp i { display:block; height:100%; background:#c8ce9e; transition:width .2s; }
+.enemy-numbers { font:11px var(--mono); color:#dedfc0; }
+.enemy-numbers small { font-size:9px; color:#adb79a; }
+.intent-pill { padding:5px 8px; background:#202b20ed; border:1px solid #6a795455; font-size:10px; color:#c3d0a9; white-space:nowrap; box-shadow:2px 2px 0 #0d180d55; }
+.intent-pill.attack { color:#f2b383; background:#422e20f0; border-color:#a47d4d88; }
+.intent-pill.charge { color:#d5d09e; background:#353722ed; }
+.targeted .enemy-name { color:#f0bc7e; }
+.targeted .enemy-hp { border-color:#dc9b55; }
+.target-corners { position:absolute; inset:0; opacity:0; transition:opacity .2s; pointer-events:none; background:linear-gradient(#dfac70,#dfac70) left top/16px 2px no-repeat,linear-gradient(#dfac70,#dfac70) left top/2px 16px no-repeat,linear-gradient(#dfac70,#dfac70) right top/16px 2px no-repeat,linear-gradient(#dfac70,#dfac70) right top/2px 16px no-repeat,linear-gradient(#dfac70,#dfac70) left bottom/16px 2px no-repeat,linear-gradient(#dfac70,#dfac70) left bottom/2px 16px no-repeat,linear-gradient(#dfac70,#dfac70) right bottom/16px 2px no-repeat,linear-gradient(#dfac70,#dfac70) right bottom/2px 16px no-repeat; }
+.targeted .target-corners, .enemy-target:hover:not(:disabled) .target-corners, .enemy-target:focus-visible .target-corners { opacity:.8; }
+.enemy-target:hover:not(:disabled) { background:#c7c99408; }
+.phase-banner { position:absolute; left:50%; bottom:84px; transform:translateX(-50%); z-index:5; display:flex; align-items:center; gap:9px; white-space:nowrap; padding:8px 13px; background:#1b271be8; border:1px solid #89936355; box-shadow:2px 2px 0 #10190e66; }
+.phase-banner b { color:#d5e2b1; font-size:11px; font-weight:500; }
+.phase-banner > span:last-child { font-size:9px; color:#a6b493; }
+.phase-dot { width:5px; height:5px; background:#bccf8c; }
+.enemy-phase { background:#38291ee8; border-color:#b47b4888; }
+.enemy-phase .phase-dot { background:#e19c62; }
+.enemy-phase b { color:#efb884; }
+.battle-actions { position:absolute; left:50%; bottom:22px; transform:translateX(-50%); z-index:5; display:none; }
+.in-battle .battle-actions, .battle-cleared .battle-actions { display:flex; }
+.fire-action { min-width:260px; min-height:50px; display:flex; gap:12px; align-items:center; padding:10px 16px; background:#d99a61; color:#20251a; border:1px solid #ecbd82; box-shadow:0 4px 0 #593f26,0 6px 22px #10160b88; touch-action:manipulation; }
+.fire-action > svg { width:24px; height:24px; }
+.fire-action > span { display:flex; flex-direction:column; gap:4px; text-align:left; }
+.fire-action strong { font-size:12px; }
+.fire-action small { font-size:9px; color:#4c5033; }
+.fire-action > b { font-size:11px; margin-left:auto; font-weight:500; }
+.fire-action:hover:not(:disabled) { background:#edb37b; }
+.fire-action:active:not(:disabled) { transform:translateY(2px); box-shadow:0 2px 0 #593f26; }
+.fire-action:disabled { background:#283525ed; border-color:#6a795166; color:#afb99b; box-shadow:0 3px 0 #172515; }
+.fire-action:disabled small { color:#7b8e6b; }
+.scene-message, .touch-device .scene-message { z-index:6; bottom:132px; border-color:#d69b5c; background:#263223ec; font-size:11px; }
+.deck-zone { background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),linear-gradient(100deg,#2e3625,#1a251b 50%,#293524); border-top:3px solid #8b8d60; box-shadow:0 -5px 0 #0c180d99,0 -8px 0 #63714944; }
+.player-status, .turn-controls { border-color:#596544; }
+.player-status .operator-avatar { color:#d5d8ab; border-color:#8a9670; background:#414e32; }
+.health-label strong { color:#e5e4c5; }
+.hand-heading { color:#b6c3a1; margin-bottom:3px; }
+#hand-hint { color:#aebc98; }
+.hand { padding-top:13px; padding-bottom:5px; min-height:184px; gap:10px; align-items:start; }
+.hand .card { transform:rotate(var(--card-angle,0deg)); transform-origin:center bottom; }
+.hand .card:nth-child(1) { --card-angle:-3deg; }
+.hand .card:nth-child(2) { --card-angle:-1.5deg; }
+.hand .card:nth-child(4) { --card-angle:1.5deg; }
+.hand .card:nth-child(5) { --card-angle:3deg; }
+.card { --accent:#46553a; background:repeating-linear-gradient(7deg,#5f5c3410 0 1px,transparent 1px 4px),linear-gradient(145deg,#e2d7b5,#bfb38d); border:1px solid #e6dbb5; border-top:3px solid #82664a; color:#263522; box-shadow:3px 5px 0 #101c1444; height:166px; }
+.card.attack { --accent:#795334; }
+.card.defense { --accent:#405c4e; background:repeating-linear-gradient(7deg,#3a503c0a 0 1px,transparent 1px 4px),linear-gradient(145deg,#d6d8bc,#adbba0); border-top-color:#5f7d68; }
+.card.utility { --accent:#56603b; background:repeating-linear-gradient(7deg,#5a5d3410 0 1px,transparent 1px 4px),linear-gradient(145deg,#dcdbb3,#b7bc90); border-top-color:#8c9560; }
+.card-name { color:#293522; font-size:13px; }
+.card-desc { color:#4b563d; font-size:10px; }
+.card-cost { border-color:#7b805a; background:#f0e6c3aa; color:#3d4a2e; font-weight:bold; }
+.card-art { color:var(--accent); height:40px; opacity:1; }
+.card-art svg { stroke-width:1.5; }
+.card-art:before { border-color:#59674622; }
+.card-type { color:#596046; opacity:1; font-size:7px; }
+.card-bottom { color:#6b7250; }
+.card-bottom > span:first-child { border-color:#7a815466; }
+.card:hover:not(:disabled), .card.selected, .touch-device .card.selected { transform:translateY(-11px) rotate(0deg); border-color:#f4c16f; box-shadow:0 8px 24px #08120988; }
+.card.selected, .touch-device .card.selected { background:repeating-linear-gradient(7deg,#6f5b2e0a 0 1px,transparent 1px 4px),linear-gradient(145deg,#f6e1ad,#dec28c); outline:2px solid #e8b05e; }
+.card:disabled { opacity:.48; }
+.card.empty { color:#b1bc9c; background:#263622; border-color:#62734b; transform:none; }
+.end-turn-btn { color:#24321d; background:#c5d19e; border:1px solid #e1e9b9; box-shadow:0 3px 0 #5c7042; }
+.end-turn-btn:disabled { color:#7c8d6e; background:#34442a; border-color:#5c704144; box-shadow:none; }
+.modal { background:repeating-linear-gradient(0deg,#ffffff01 0 1px,transparent 1px 4px),#232e20; border:1px solid #93986b; box-shadow:5px 5px 0 #0e190dc9,0 30px 100px #030a03aa; }
+.modal h2 { color:#ece4c9; }
+.modal-copy { color:#b8c5a4; }
+.modal .eyebrow { color:#d9a56d; }
+.modal .card { transform:none; }
+.modal .card:hover:not(:disabled) { transform:translateY(-6px); }
+.modal .collection-grid .card.equipped { background:linear-gradient(145deg,#f3dfac,#d3bb89); }
+.reward-cards { padding-top:7px; }
+.route-options { display:grid; grid-template-columns:1fr 1fr; gap:15px; margin:24px 0; }
+.route-card { background:linear-gradient(140deg,#47523a,#2b3b2a); border:1px solid #839066; border-top:3px solid #c79258; text-align:left; padding:20px; min-height:200px; display:flex; flex-direction:column; gap:10px; box-shadow:3px 4px 0 #10200c77; transition:transform .15s,border-color .15s; }
+.route-card:hover { transform:translateY(-4px); border-color:#e4bd7b; }
+.route-card.supply { border-top-color:#a7c387; }
+.route-icon svg { width:32px; height:32px; color:#d6ba85; }
+.route-card small { font:8px var(--mono); color:#bcc9a8; letter-spacing:.7px; }
+.route-card strong { font-size:21px; font-weight:500; color:#f0e4be; }
+.route-card p { font-size:11px; color:#b8c6a6; line-height:1.8; margin:0; }
+.route-benefit { margin-top:auto; padding-top:13px; border-top:1px solid #7e916255; font-size:10px; color:#c4d5b0; line-height:1.7; }
+.route-benefit b { display:block; color:#e0b97d; margin-top:7px; font-size:12px; }
+footer { color:#899673; background:#151d13; }
+
+@media(max-width:1150px) {
+  .mission-panel { width:158px; left:18px; top:40px; padding:12px; }
+  .mission-panel h2 { font-size:20px; }
+  .enemy-intent { top:40px; right:18px; }
+  .card-name { font-size:12px; }
+  .card-desc { font-size:9px; }
+  .enemy-caption { width:128px; }
+  .enemy-name { font-size:12px; }
+}
+@media(max-width:800px) {
+  .deck-zone { flex-basis:238px; height:238px; min-height:238px; padding-top:9px; }
+  .hand-heading { margin-bottom:0; }
+  .hand { padding:13px 3px 5px; gap:9px; min-height:0; }
+  .hand .card { min-width:104px; flex-basis:104px; height:151px; padding:8px; transform:none; }
+  .card-name { font-size:12px; }
+  .card-desc { font-size:11px; line-height:1.45; }
+  .card-art { height:27px; }
+  .card-type { font-size:6px; }
+  .card-cost { font-size:13px; }
+  .card-bottom { padding-top:3px; }
+  .touch-device .card:hover:not(:disabled) { transform:none; }
+  .touch-device .card.selected, .card.selected { transform:translateY(-8px); }
+  .mission-panel { top:25px; left:10px; width:124px; padding:9px 10px; }
+  .mission-panel h2 { font-size:18px; margin:8px 0; }
+  .panel-kicker { font-size:6px; letter-spacing:.5px; }
+  .panel-kicker b { font-size:7px; }
+  .field-stats { gap:6px; }
+  .field-stats > span { font-size:8px; }
+  .field-stats b { font-size:10px; }
+  .enemy-intent { top:25px; right:10px; padding:10px; }
+  .enemy-intent strong { font-size:10px; }
+  .enemy-intent small { font-size:5px; }
+  .scene-topline { top:8px; font-size:6px; }
+  .scene-topline > span:last-child { display:none; }
+  .enemy-caption { width:108px; gap:4px; bottom:calc(100% + 5px); }
+  .enemy-name { font-size:11px; letter-spacing:0; }
+  .enemy-name em { display:block; font-size:8px; margin-top:3px; }
+  .enemy-hp { width:72px; }
+  .enemy-numbers { font-size:10px; }
+  .intent-pill { font-size:9px; padding:4px 6px; }
+  .phase-banner { bottom:77px; padding:7px 10px; gap:7px; }
+  .phase-banner b { font-size:10px; }
+  .phase-banner > span:last-child { font-size:8px; }
+  .battle-actions { bottom:16px; width:min(290px,calc(100% - 28px)); }
+  .fire-action { width:100%; min-width:0; min-height:48px; padding:9px 14px; gap:9px; }
+  .fire-action strong { font-size:12px; }
+  .fire-action small { font-size:9px; }
+  .fire-action > b { font-size:11px; }
+  .fire-action > svg { width:21px; height:21px; }
+  .scene-message, .touch-device .scene-message { bottom:119px; font-size:10px; max-width:92%; padding:8px 11px; }
+  .route-options { gap:10px; margin:18px 0; }
+  .route-card { padding:14px; min-height:215px; gap:10px; }
+  .route-card strong { font-size:17px; }
+  .route-card p { font-size:10px; }
+  .route-card small { font-size:7px; letter-spacing:0; }
+  .route-benefit { font-size:9px; }
+  .route-benefit b { font-size:11px; }
+  .modal-copy { font-size:12px; }
+  .reward-cards .card { height:200px; }
+  .reward-cards .card-desc { font-size:11px; }
+  .guide-item p { font-size:11px; }
+  .guide-item b { font-size:12px; }
+  .guide-note { font-size:11px; }
+}
+@media(max-width:560px) and (max-height:700px) and (orientation:portrait) {
+  .mission-panel { width:115px; padding:7px 9px; }
+  .mission-panel h2 { font-size:16px; margin:7px 0; }
+  .field-stats > span:first-child { display:none; }
+  .enemy-caption { width:95px; gap:3px; }
+  .enemy-numbers { display:none; }
+  .enemy-name { font-size:10px; }
+  .enemy-name em { display:inline; font-size:7px; }
+  .intent-pill { font-size:8px; }
+  .phase-banner > span:last-child { display:none; }
+  .scene-message, .touch-device .scene-message { bottom:115px; font-size:9px; }
+  .route-card { min-height:195px; padding:12px; }
+  .route-card strong { font-size:15px; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1100px) {
+  .deck-zone { min-height:0; height:auto; grid-template-rows:36px minmax(0,1fr) 44px; }
+  .hand { padding:10px 3px 4px; }
+  .hand .card { height:clamp(100px,calc(100dvh - 230px),155px); min-width:108px; flex-basis:108px; padding:7px; }
+  .hand-heading { margin-bottom:0; }
+  .card-name { font-size:11px; }
+  .card-desc { font-size:10px; }
+  .card-art { height:22px; margin:1px 0; }
+  .card-art svg { height:20px; width:20px; }
+  .card-bottom { padding-top:2px; }
+  .card-cost { height:18px; }
+  .mission-panel { top:24px; left:10px; width:113px; padding:7px 9px; }
+  .mission-panel h2 { font-size:16px; margin:6px 0; }
+  .field-stats > span:first-child { display:none; }
+  .field-stats { gap:0; }
+  .field-stats > span { font-size:7px; }
+  .field-stats b { font-size:9px; }
+  .enemy-intent { top:24px; right:10px; padding:7px 9px; }
+  .enemy-intent small { font-size:5px; }
+  .enemy-intent strong { font-size:9px; }
+  .enemy-indicator { height:19px; width:3px; }
+  .enemy-caption { width:110px; gap:3px; bottom:calc(100% + 3px); }
+  .enemy-name { font-size:10px; }
+  .enemy-name em { display:inline; font-size:7px; }
+  .enemy-numbers { display:none; }
+  .enemy-hp { width:70px; height:3px; }
+  .intent-pill { font-size:8px; padding:3px 5px; }
+  .phase-banner { top:25px; bottom:auto; padding:6px 10px; }
+  .phase-banner > span:last-child { display:none; }
+  .phase-banner b { font-size:9px; }
+  .battle-actions { bottom:13px; width:230px; }
+  .fire-action { min-height:44px; padding:7px 12px; }
+  .fire-action strong { font-size:11px; }
+  .fire-action small { font-size:8px; }
+  .scene-message, .touch-device .scene-message { bottom:68px; font-size:9px; padding:7px 10px; }
+  .scene-topline { top:7px; }
+  .route-options { margin:16px 0; }
+  .route-card { min-height:165px; padding:14px; gap:7px; }
+  .route-icon { display:none; }
+  .route-card strong { font-size:18px; }
+}
+@media(max-width:800px) {
+  .mission-panel { padding:8px 10px; }
+  .mission-panel h2 { margin:5px 0 7px; font-size:17px; }
+  .field-stats > span:first-child { display:none; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1100px) {
+  .mission-panel { top:8px; padding:7px 9px; width:auto; display:flex; align-items:center; gap:9px; }
+  .mission-panel .panel-kicker { display:none; }
+  .mission-panel h2 { margin:0; font-size:14px; }
+  .field-stats > span { gap:6px; }
+  .enemy-intent { top:8px; }
+  .phase-banner { top:9px; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:700px) {
+  .mission-panel, .enemy-intent { display:none!important; }
+  .phase-banner { top:auto; bottom:67px; padding:5px 8px; }
+  .enemy-caption { width:86px; }
+  .enemy-name { font-size:9px; }
+  .enemy-name em { display:none; }
+  .intent-pill { font-size:7px; padding:3px 4px; }
+  .enemy-hp { width:59px; }
+  .scene-message, .touch-device .scene-message { bottom:102px; }
+}
+@media(max-width:560px) and (max-height:700px) and (orientation:portrait) {
+  .mission-panel { top:3px; left:8px; display:flex; align-items:center; gap:7px; width:auto; height:17px; padding:0; border:0; background:none; box-shadow:none; backdrop-filter:none; }
+  .mission-panel .panel-kicker { display:none; }
+  .mission-panel h2 { font-size:10px; line-height:14px; margin:0; }
+  .field-stats > span { font-size:6px; gap:5px; }
+  .field-stats b { font-size:9px; }
+  .enemy-intent { top:3px; right:8px; height:17px; padding:0; border:0; background:none; }
+  .enemy-intent small, .enemy-indicator { display:none; }
+  .enemy-intent strong { font-size:9px; line-height:14px; margin:0; }
+  .battle-actions { bottom:8px; }
+  .fire-action { min-height:44px; }
+  .phase-banner { bottom:61px; }
+  .scene-topline { display:none; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1100px) {
+  .enemy-intent { height:28px; padding:5px 8px; }
+  .enemy-intent small { display:none; }
+  .enemy-intent strong { margin:0; }
+  .enemy-indicator { height:15px; }
+}
