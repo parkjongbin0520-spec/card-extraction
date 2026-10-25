@@ -169,3 +169,36 @@ test('template risks and added risks compile independently and never mutate temp
   assert.equal(Cards.compile(card).risks[0].amount,3);
   assert.equal(Cards.templates.surge.risks[0].amount,3);
 });
+
+test('tooltip breakdown separates base values and added options including zero-base effects',()=>{
+  const card=Cards.create('heal',{rarity:'unique',options:[
+    {type:'heal',value:10,tier:'rare'},
+    {type:'heal',value:11,tier:'epic'},
+    {type:'energyGain',value:1,tier:'unique'},
+    {type:'draw',value:1,tier:'rare'}
+  ],risks:[{type:'seal',amount:1,turns:3}]});
+  const before=JSON.stringify(card),details=Cards.breakdown(card);
+  assert.deepEqual(details.effects.heal,{base:12,bonus:21,total:33});
+  assert.deepEqual(details.effects.energyGain,{base:0,bonus:1,total:1});
+  assert.deepEqual(details.effects.draw,{base:0,bonus:1,total:1});
+  assert.equal(details.options.length,4);
+  assert.deepEqual(details.risks,[{type:'seal',amount:1,turns:3}]);
+  details.options[0].value=99;details.risks[0].turns=99;
+  assert.equal(JSON.stringify(card),before);
+  assert.equal(Cards.breakdown('unknown'),null);
+});
+
+test('unmodified templates have zero added values and keep intrinsic risks in tooltip data',()=>{
+  for(const id of Object.keys(Cards.templates)){
+    const detail=Cards.breakdown(id);
+    assert.ok(Object.values(detail.effects).every(e=>e.bonus===0),id);
+    assert.deepEqual(detail.options,[]);
+    assert.deepEqual(detail.risks,Cards.templates[id].risks||[]);
+  }
+});
+
+
+test('target-count breakdown keeps the implicit single target as the base',()=>{
+  const card=Cards.create('shot',{options:[{type:'targets',value:2,tier:'normal'}]});
+  assert.deepEqual(Cards.breakdown(card).effects.targets,{base:1,bonus:2,total:3});
+});

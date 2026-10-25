@@ -26,8 +26,9 @@
   function persist(){CardLibrary.sync(save);storageAvailable=CardLibrary.persist(storage,save);}
   const state={playing:false,mode:'briefing',phase:'player',zone:0,route:'standard',hp:80,armor:1,shield:0,energy:3,turn:1,
     loot:0,kills:0,cleared:0,hand:['shot','burst','guard','scan','shot'],draw:[],discard:[],runCards:[],
-    selected:-1,target:0,enemies:[],cards:{},bag:[],shieldLayers:[],statuses:[],rerolled:false,battleReward:120,rewarded:false,time:0,shotAt:-1000,shotTarget:-1};
-  const cardFor=ref=>CardLibrary.compile(state.cards[ref]||ref);
+    selected:-1,target:0,enemies:[],cards:{},bag:[],shieldLayers:[],statuses:[],battleReward:120,rewarded:false,time:0,shotAt:-1000,shotTarget:-1};
+  const instanceFor=ref=>state.cards[ref]||save.instances.find(c=>c.uid===ref)||ref;
+  const cardFor=ref=>CardLibrary.compile(instanceFor(ref));
   const battleState=()=>({hp:state.hp,maxHp:80,armor:state.armor,energy:state.energy,shieldLayers:state.shieldLayers,statuses:state.statuses,enemies:state.enemies});
   function applyBattle(next){for(const key of ['hp','energy','shieldLayers','statuses','enemies'])state[key]=next[key];state.shield=Rules.shield(state);for(const e of state.enemies)e.action=e.actions?.[e.actionIndex||0];}
   function makeEnemies(templates,scale=1){return templates.map((e,id)=>{
@@ -67,7 +68,34 @@
   }
   function riskBrief(c){return (c.risks||[]).map(r=>r.type==='hp'?`체력 −${r.amount}`:r.type==='energy'?`비용 +${r.amount}`:r.type==='erosion'?`침식 +${r.amount}%`:`${statusNames[r.type]||r.type}${r.type==='stress'?` ${r.amount}%`:r.type==='vulnerable'?` −${r.amount}`:''} ${r.turns}턴`).join(' · ');}
   function briefFor(c) {
-    return [c.damage?`${c.damage} 피해${c.hits>1?` ×${c.hits}`:''}${c.aoe?' · 전체':''}`:'',c.block?`${c.block} 쉴드 · ${c.shieldDuration}턴`:'',c.heal?`${c.heal} 회복`:'',c.draw?`${c.draw}장 뽑기`:'',c.energyGain?`에너지 +${c.energyGain}`:'',c.shatter?'쉴드 해제':'',c.pierce?'장갑 무시':'',c.delay?`무력화 +${c.delay}`:''].filter(Boolean).join(' · ');
+    return [c.damage?`${c.damage} 피해${c.hits>1?` ×${c.hits}`:''}${c.aoe?' · 전체':''}`:'',c.block?`${c.block} 쉴드 · ${c.shieldDuration}턴`:'',c.heal?`체력 ${c.heal} 회복`:'',c.energyGain?`에너지 +${c.energyGain}`:'',c.draw?`카드 +${c.draw}`:'',c.shatter?'쉴드 해제':'',c.pierce?'장갑 무시':'',c.delay?`무력화 +${c.delay}`:''].filter(Boolean).join(' · ');
+  }
+  function summaryMarkup(c){
+    const text=briefFor(c);return text.replace(/\d+/g,n=>`<b class="effect-value">${n}</b>`).replace(/\+<b class="effect-value">(\d+)<\/b>/g,'<b class="effect-value">+$1</b>');
+  }
+  const optionNames={damage:'피해',block:'쉴드',heal:'회복',draw:'드로우',energyGain:'에너지 획득',hits:'공격 횟수',shieldDuration:'쉴드 지속',targets:'대상 수',pierce:'철갑탄',shatter:'해제',delay:'무력화',cost:'에너지 비용'};
+  function riskDetails(r){
+    const t=r.turns||1,n=r.amount||0;
+    return ({hp:`체력 소모: 사용 전에 체력 ${n}을 소모합니다. 현재 체력이 ${n}보다 커야 합니다.`,energy:`추가 비용: 에너지를 ${n} 더 소모합니다.`,vulnerable:`취약: ${t}턴 동안 장갑이 ${n} 감소합니다.`,stress:`스트레스: ${t}턴 동안 각 타격의 명중률이 ${n}%p 감소합니다. 이 카드부터 적용됩니다.`,seal:`승화: ${t}턴 동안 쉴드가 0으로 고정되며 쉴드를 얻을 수 없습니다.`,curse:`저주: ${t}턴 동안 카드 사용 시 남은 손패를 버리고 같은 장수를 다시 뽑습니다.`,erosion:`파멸의식: 사용한 카드의 침식이 ${n}%p 증가합니다.`})[r.type]||'';
+  }
+  function cardDetails(ref,c){
+    const data=CardLibrary.breakdown(instanceFor(ref)),e=data.effects;
+    const value=type=>`${e[type].base}${e[type].bonus?'('+ (e[type].bonus>0?'+':'')+e[type].bonus+')':''}`;
+    const lines=[];
+    if(c.damage)lines.push(`피해를 ${value('damage')} 줍니다.${c.aoe?' 모든 적에게 적용합니다.':''}`);
+    if(c.hits>1)lines.push(`${value('hits')}회 공격합니다. 각 타격의 명중을 따로 판정합니다.`);
+    if(c.block)lines.push(`쉴드를 ${value('block')} 얻어 ${value('shieldDuration')}턴 유지합니다.`);
+    if(c.heal)lines.push(`체력을 ${value('heal')} 회복합니다.`);
+    if(c.energyGain)lines.push(`에너지를 ${value('energyGain')} 얻습니다.`);
+    if(c.draw)lines.push(`카드를 ${value('draw')}장 뽑습니다.`);
+    if(c.pierce)lines.push('철갑탄: 장갑을 무시합니다. 쉴드는 피해를 흡수합니다.');
+    if(c.shatter)lines.push('해제: 첫 명중의 피해 계산 전에 대상의 쉴드를 전량 제거합니다.');
+    if(c.delay)lines.push(`무력화: 명중한 대상의 행동 대기를 ${value('delay')} 늘립니다. 카드당 한 번 적용합니다.`);
+    if(c.targets>1&&!c.aoe)lines.push(`대상 수 ${value('targets')}.`);
+    const sections=[];
+    if(data.options.length)sections.push({title:'강화 옵션',items:data.options.map(o=>`${rarityNames[o.tier]} · ${optionNames[o.type]}${['pierce','shatter'].includes(o.type)?'':` +${o.value}`}${o.bonus?' · 리스크 보너스':''}`)});
+    if(data.risks.length)sections.push({title:'리스크 · 본효과보다 먼저 적용',items:data.risks.map(riskDetails)});
+    return {description:lines.join('\n'),sections};
   }
   function damageText(t){return t.minDamage===t.maxDamage?String(t.maxDamage):`${t.minDamage}–${t.maxDamage}`;}
   function previewFor(c,target) {
@@ -87,15 +115,15 @@
   function cardMarkup(id,index,opts={}) {
     const c=cardFor(id);
     const disabled=opts.disabled?'disabled':'';
-    return `<button class="card ${c.type} ${state.selected===index&&!opts.reward?'selected':''} ${opts.extraClass||''} ${opts.unavailable?'unavailable':''}" data-card="${c.templateId}" data-instance="${id}" ${opts.reward?'data-reward="'+id+'"':'data-index="'+index+'"'} ${disabled} aria-label="${c.name}, 에너지 ${c.cost}, ${c.desc}" ${!opts.reward?'aria-pressed="'+(state.selected===index)+'"':''}>
-      <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-grip" title="잡아서 대상에게 끌기" aria-hidden="true">⠿</span><span class="card-type">${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'}</span></span>
-      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-brief">${keywords(briefFor(c))}</span><span class="card-desc">${keywords(c.desc)}</span>
+    return `<button class="card ${c.type} ${state.selected===index&&!opts.reward?'selected':''} ${opts.extraClass||''} ${opts.unavailable?'unavailable':''}" data-rarity="${c.rarity}" data-card="${c.templateId}" data-instance="${id}" ${opts.reward?'data-reward="'+(opts.rewardId||id)+'"':'data-index="'+index+'"'} ${disabled} aria-label="${c.name}, ${rarityNames[c.rarity]}, 에너지 ${c.cost}, ${briefFor(c)}, ${riskBrief(c)}" ${!opts.reward?'aria-pressed="'+(state.selected===index)+'"':''}>
+      <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-grip" title="잡아서 대상에게 끌기" aria-hidden="true">⠿</span><span class="card-type">${rarityNames[c.rarity]}</span></span>
+      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-brief">${summaryMarkup(c)}</span><span class="card-desc">${keywords(c.desc)}</span>
       ${riskBrief(c)?`<span class="card-risk">${riskBrief(c)}</span>`:""}<span class="card-bottom"><span>${opts.reward?rarityNames[c.rarity]:index+1}</span><span>${opts.bottom||`에너지 ${c.cost} 사용`}</span></span></button>`;
   }
 
   function renderHand() {
     const scroll=$('hand').scrollLeft;
-    $('hand').innerHTML=state.hand.map((id,i)=>cardMarkup(id,i,{disabled:!isPlaying(),unavailable:!projection(cardFor(id),state.enemies.find(e=>e.id===state.target)).ok,bottom:cardFor(id).cost>state.energy?'에너지 부족':undefined})).join('')||'<div class="card empty">턴을 종료해 손패 보충</div>';
+    $('hand').innerHTML=state.hand.map((id,i)=>cardMarkup(id,i,{disabled:!isPlaying(),unavailable:!projection(cardFor(id),state.enemies.find(e=>e.id===state.target)).ok,bottom:cardFor(id).cost>state.energy?'에너지 부족':undefined})).join('')||'<div class="card empty">턴 종료로 보충 · 뽑기 더미가 비면 리롤</div>';
     $('hand').scrollLeft=scroll;
     $('hand').querySelectorAll('[data-index]').forEach(b=>b.addEventListener('click',()=>chooseCard(Number(b.dataset.index))));
     if(state.selected>=0)$('hand').querySelector('.selected')?.scrollIntoView({block:'nearest',inline:'nearest'});
@@ -167,14 +195,14 @@
     document.body.dataset.mode=state.mode;
     document.body.classList.toggle('has-selection',!!chosen&&state.mode==='combat');
     $('sector-progress').querySelectorAll('span').forEach((s,i)=>{s.classList.toggle('active',i===state.zone);s.classList.toggle('completed',i<state.cleared);});
-    $('reroll-btn').disabled=!isPlaying()||state.rerolled||state.energy<1||!state.hand.length;
+    $('reroll-btn').disabled=!isPlaying()||!state.bag.length;
     $('status-effects').textContent=Rules.activeStatuses(state).map(s=>`${statusNames[s.type]} ${s.type==='stress'?s.amount+'% · ':s.type==='vulnerable'?'−'+s.amount+' · ':''}${s.turns}턴`).join(' / ');
     renderHand();renderEnemies();inspector?.refresh();
   }
-  function drawCards(count) {
+  function drawCards(count,recycleDiscard=false) {
     for(let i=0;i<count;i++) {
       if(state.hand.length>=8){notify('손패는 최대 8장입니다.');break;}
-      if(!state.draw.length){state.draw=shuffle(state.discard);state.discard=[];}
+      if(!state.draw.length&&recycleDiscard){state.draw=shuffle(state.discard);state.discard=[];}
       if(!state.draw.length)break;
       state.hand.push(state.draw.pop());
     }
@@ -185,8 +213,10 @@
     state.draw=shuffle(deck);if(!first)drawCards(5);state.selected=-1;
   }
   function reroll(){
-    if(!isPlaying()||state.rerolled||state.energy<1||!state.hand.length)return;
-    inspector?.hide();cardDrag?.cancel();const count=state.hand.length;state.discard.push(...state.hand);state.hand=[];state.energy--;state.rerolled=true;state.selected=-1;drawCards(count);renderHUD();sound('card');notify(`손패 ${count}장 교체 · 에너지 −1`);
+    if(!isPlaying()||!state.bag.length)return;
+    inspector?.hide();cardDrag?.cancel();
+    state.draw=shuffle([...state.draw,...state.discard,...state.hand]);state.hand=[];state.discard=[];state.selected=-1;
+    sound('card');endTurn();notify('리롤 · 버림 카드 회수 · 적 행동 후 손패 보충');
   }
   function openRoute(index) {
     clearTimeout(pendingTimer);state.zone=index;state.mode='route';state.phase='player';state.selected=-1;state.enemies=[];renderHUD();
@@ -197,7 +227,7 @@
     $('route-supply').addEventListener('click',()=>startZone(index,'supply'));
   }
   function startZone(index,route='standard') {
-    closeModal();state.zone=index;state.route=route;state.mode='combat';state.phase='player';state.energy=3;state.shield=0;state.shieldLayers=[];state.statuses=[];state.rerolled=false;state.turn=1;state.rewarded=false;
+    closeModal();state.zone=index;state.route=route;state.mode='combat';state.phase='player';state.energy=3;state.shield=0;state.shieldLayers=[];state.statuses=[];state.turn=1;state.rewarded=false;
     const templates=route==='supply'&&index?ZONES[index].enemies.slice(0,-1):ZONES[index].enemies;
     state.enemies=makeEnemies(templates,route==='supply'?.85:1);
     state.battleReward=Math.round(ZONES[index].reward*(route==='supply'?.65:1));state.target=0;prepareDeck(index===0);renderHUD();sound('card');
@@ -220,7 +250,7 @@
     const result=Rules.play(battleState(),c,target?.id??state.target);if(!result.ok){notify(result.error);return;}
     inspector?.hide();const before=new Set(alive().map(e=>e.id)),hitTotals=new Map();state.hand.splice(index,1);state.selected=-1;applyBattle(result.state);
     for(const event of result.events){
-      if(event.type==='reroll'){const count=state.hand.length;state.discard.push(...state.hand);state.hand=[];drawCards(count);}
+      if(event.type==='reroll'){const count=state.hand.length;state.discard.push(...state.hand);state.hand=[];drawCards(count,true);}
       if(event.type==='draw')drawCards(event.count);
       if(event.type==='erosion'&&state.cards[ref])state.cards[ref].erosion=clamp(state.cards[ref].erosion+event.amount,0,100);
       if(event.type==='hit'){const e=state.enemies.find(e=>e.id===event.id);e.hitAt=performance.now();hitTotals.set(e.id,(hitTotals.get(e.id)||0)+event.hpDamage);e.lastDamage=hitTotals.get(e.id);}
@@ -251,7 +281,7 @@
     const before=state.hp,result=Rules.round(battleState());applyBattle(result.state);const damage=before-state.hp;
     if(damage){$('damage-flash').classList.add('hit');setTimeout(()=>$('damage-flash').classList.remove('hit'),130);sound('hurt');}else sound('guard');
     if(!state.hp){state.statuses=[];state.shieldLayers=[];state.shield=0;state.mode='dead';state.playing=false;renderHUD();showOutcome(false);return;}
-    state.discard.push(...state.hand);state.hand=[];state.energy=3;state.turn++;state.rerolled=false;state.phase='player';drawCards(5);renderHUD();notify(damage?`체력 −${damage}`:'내 턴');
+    state.energy=3;state.turn++;state.phase='player';drawCards(Math.max(0,5-state.hand.length));renderHUD();notify(damage?`체력 −${damage}`:'내 턴');
   }
   function showModal(content,wide=false,kind='info'){
     cardDrag?.cancel();inspector?.hide();$('scene-message').classList.remove('visible');
@@ -290,18 +320,19 @@
   function goHome(){
     clearTimeout(pendingTimer);queuedReward=false;enemyResolutionPending=false;
     Object.assign(state,{mode:'briefing',phase:'player',playing:false,zone:0,hp:80,armor:1,shield:0,energy:3,turn:1,loot:0,cleared:0,selected:-1,target:0,discard:[],hand:['shot','burst','guard','scan','shot']});
-    state.shieldLayers=[];state.statuses=[];state.rerolled=false;state.enemies=makeEnemies(ZONES[0].enemies);
+    state.shieldLayers=[];state.statuses=[];state.enemies=makeEnemies(ZONES[0].enemies);
     closeModal();$('briefing').classList.remove('hidden');$('sector-stamp').classList.remove('hidden');renderHUD();
   }
   function showGuide(){
     if(activeModal&&['reward','outcome','route'].includes(activeModal))return;
-    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 06</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>적을 눌러 대상을 선택하고 카드를 고릅니다. 같은 카드를 다시 누르면 선택이 해제됩니다. 비용·효과를 확인한 뒤 사용으로 확정합니다. 공격 카드를 적에게 끌면 체력 바에 예상 피해가 표시되고, 그 위에서 손을 떼면 바로 사용됩니다. 적이 없는 곳에 놓으면 취소됩니다. 모바일은 카드 모서리의 ⠿ 손잡이로 끌 수 있습니다. 마우스 올리기·Tab 포커스·모바일 길게 누르기로도 설명을 볼 수 있습니다. 방어·회복은 좌측 내 상태, 전술은 우측 배낭 위에 놓습니다. 올바른 대상이 강조되고 주변은 어두워집니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>적 HUD에는 이름·체력·남은 턴·행동이 표시됩니다. ‘준비 / 이번 차례’는 이번 적 차례에 행동합니다. 대기 1은 이번 종료에 0이 되고, 다음 게임 턴 적 차례에 행동합니다. 처치하면 해당 행동이 취소됩니다. 방어구 Lv.1은 공격마다 피해를 1 줄입니다. 쉴드는 카드에 적힌 기간 동안 잔량이 유지되고 자동 충전되지 않습니다. 리스크를 먼저 적용한 뒤 본효과가 발동하며, 스트레스 명중률은 각 타격에 따로 적용됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 새 턴 손패 5장 · 손패 상한 8장. 리롤: 에너지 1, 게임 턴마다 1회. 뽑기 더미가 비면 버린 카드를 섞습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 카드 사용 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
+    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 07</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>적을 눌러 대상을 선택하고 카드를 고릅니다. 같은 카드를 다시 누르면 선택이 해제됩니다. 비용·효과를 확인한 뒤 사용으로 확정합니다. 공격 카드를 적에게 끌면 체력 바에 예상 피해가 표시되고, 그 위에서 손을 떼면 바로 사용됩니다. 적이 없는 곳에 놓으면 취소됩니다. 모바일은 카드 모서리의 ⠿ 손잡이로 끌 수 있습니다. 마우스 올리기·Tab 포커스·모바일 길게 누르기로도 설명을 볼 수 있습니다. 방어·회복은 좌측 내 상태, 전술은 우측 배낭 위에 놓습니다. 올바른 대상이 강조되고 주변은 어두워집니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>적 HUD에는 이름·체력·남은 턴·행동이 표시됩니다. ‘준비 / 이번 차례’는 이번 적 차례에 행동합니다. 대기 1은 이번 종료에 0이 되고, 다음 게임 턴 적 차례에 행동합니다. 처치하면 해당 행동이 취소됩니다. 방어구 Lv.1은 공격마다 피해를 1 줄입니다. 쉴드는 카드에 적힌 기간 동안 잔량이 유지되고 자동 충전되지 않습니다. 리스크를 먼저 적용한 뒤 본효과가 발동하며, 스트레스 명중률은 각 타격에 따로 적용됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 턴 종료 시 손패를 유지하고 5장까지 보충 · 상한 8장. 리롤은 턴을 넘기며 버림·남은 손패를 회수해 섞고 새로 5장을 뽑습니다. 일반 보충은 버림 카드를 회수하지 않습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 카드 사용 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
   }
   function showCollection() {
     if(activeModal&&['reward','outcome'].includes(activeModal))return;
     const content=`<button class="modal-close" data-close aria-label="보관함 닫기">×</button><div class="eyebrow">PERSONAL STASH / PERSISTENT</div><h2 id="modal-title">카드 <em>보관함.</em></h2><div class="collection-summary"><span>누적 회수 <b>${save.credits.toLocaleString()} CR</b></span><span>귀환 <b>${save.runs}회</b></span><span>추가 장착 <b>${save.loadout.length}/2</b></span></div><div class="collection-grid">${Object.keys(CARDS).map((id,i)=>{
       const base=BASE_DECK.includes(id),owned=base||save.cards.includes(id),equipped=save.loadout.includes(id);
-      return cardMarkup(id,i,{reward:true,extraClass:!owned?'locked':equipped?'equipped':'',bottom:base?'기본 덱':!owned?'탐사 후 귀환 시 보관':equipped?'✓ 다음 출정 장착':'클릭하여 장착',disabled:!owned||base||state.playing});
+      const ref=save.instances.find(c=>c.templateId===id&&!c.unstable)?.uid||id;
+      return cardMarkup(ref,i,{reward:true,rewardId:id,extraClass:!owned?'locked':equipped?'equipped':'',bottom:base?'기본 덱':!owned?'탐사 후 귀환 시 보관':equipped?'✓ 다음 출정 장착':'클릭하여 장착',disabled:!owned||base||state.playing});
     }).join('')}</div><p class="loadout-note">회수 카드 ${save.instances.length-save.starterIds.length}장 보유 · 같은 카드도 개별 보존됩니다. 기본 덱 12장은 항상 유지됩니다. 회수한 희귀 카드는 최대 2장까지 추가 장착할 수 있습니다.<br>${state.playing?'현재 출정 중입니다. 장착 변경은 작전 준비 화면에서 가능합니다.':'주황색 테두리는 다음 출정에 가져갈 카드입니다. 클릭하면 장착을 해제합니다.'}<br>전리품과 해금 카드는 ${storageAvailable?'이 브라우저에 자동 저장됩니다.':'현재 창에서만 보존됩니다. 브라우저 저장소가 비활성화되어 있습니다.'}</p>`;
     showModal(content,true,'collection');
     $('modal').querySelectorAll('[data-reward]:not(:disabled)').forEach(b=>b.addEventListener('click',()=>{
@@ -315,12 +346,13 @@
   function showPile(discard=false) {
     if(!state.playing||(activeModal&&activeModal!=='pile'))return;
     const pile=discard?state.discard:state.draw,counts={};pile.forEach(ref=>{const id=cardFor(ref).templateId;counts[id]=(counts[id]||0)+1;});
-    showModal(`<button class="modal-close" data-close aria-label="카드 목록 닫기">×</button><div class="eyebrow">카드 더미</div><h2 id="modal-title">${discard?'버린 카드':'뽑기 더미'} <em>${pile.length}장</em></h2><div class="pile-tabs"><button data-pile="draw" class="${!discard?'active':''}">뽑기 ${state.draw.length}장</button><button data-pile="discard" class="${discard?'active':''}">버림 ${state.discard.length}장</button></div><p class="modal-copy">${discard?'뽑기 더미가 비면 이 카드들을 섞어서 다시 사용합니다.':'카드 목록이며, 뽑히는 순서는 공개되지 않습니다.'}</p><div class="pile-list">${Object.entries(counts).map(([id,n])=>`<div class="pile-item"><b>비용 ${CARDS[id].cost}</b>${CARDS[id].name}<small>× ${n}</small></div>`).join('')||'<p class="modal-copy">카드가 없습니다.</p>'}</div><div class="modal-buttons"><button class="secondary-btn" data-close>작전 복귀</button></div>`,false,'pile');
+    showModal(`<button class="modal-close" data-close aria-label="카드 목록 닫기">×</button><div class="eyebrow">카드 더미</div><h2 id="modal-title">${discard?'버린 카드':'뽑기 더미'} <em>${pile.length}장</em></h2><div class="pile-tabs"><button data-pile="draw" class="${!discard?'active':''}">뽑기 ${state.draw.length}장</button><button data-pile="discard" class="${discard?'active':''}">버림 ${state.discard.length}장</button></div><p class="modal-copy">${discard?'사용한 카드입니다. 리롤하면 뽑기 더미로 회수합니다. 저주의 손패 교체는 별도 효과입니다.':'다음 보충에 쓰는 남은 카드입니다. 뽑히는 순서는 공개되지 않습니다.'}</p><div class="pile-list">${Object.entries(counts).map(([id,n])=>`<div class="pile-item"><b>비용 ${CARDS[id].cost}</b>${CARDS[id].name}<small>× ${n}</small></div>`).join('')||'<p class="modal-copy">카드가 없습니다.</p>'}</div><div class="modal-buttons"><button class="secondary-btn" data-close>작전 복귀</button></div>`,false,'pile');
     $('modal').querySelectorAll('[data-pile]').forEach(b=>b.addEventListener('click',()=>showPile(b.dataset.pile==='discard')));
   }
 
   function findInspection(token) {
     if(token.kind==='card'){
+      if(token.catalog)return $('modal').querySelector(`[data-instance="${token.id}"]`);
       const n=$('hand').querySelector(`[data-index="${token.index}"]`);return (n?.dataset.instance||n?.dataset.card)===token.id?n:null;
     }
     if(token.kind==='enemy')return $('enemy-targets').querySelector(`[data-enemy="${token.id}"]`);
@@ -331,11 +363,12 @@
   }
   function inspectionData(token) {
     if(token.kind==='card'){
-      const c=cardFor(token.id);if(!c||state.hand[token.index]!==token.id)return null;
+      const c=cardFor(token.id);if(!c||!token.catalog&&state.hand[token.index]!==token.id)return null;
       const target=state.enemies.find(e=>e.id===state.target&&e.hp>0);
-      return {kicker:`${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'} · 비용 ${c.cost}`,title:c.name,description:previewFor(c,target)||c.desc,
-        rows:[{label:c.type==='attack'?'대상':'적용',value:c.type==='attack'?(target?.name||'적 선택'):'나'}],
-        note:!projection(c,target).ok?projection(c,target).error:[c.desc,riskBrief(c)].filter(Boolean).join(' · ')+(state.selected===token.index?' · 사용으로 확정':' · 눌러서 선택')};
+      const details=cardDetails(token.id,c),check=projection(c,target);
+      return {kicker:`${rarityNames[c.rarity]} · ${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'} · 비용 ${check.energyCost??c.cost}`,title:c.name,...details,
+        rows:token.catalog?[]:[{label:'현재 예상',value:previewFor(c,target)},{label:c.type==='attack'?'대상':'적용',value:c.type==='attack'?(target?.name||'적 선택'):c.type==='defense'||c.heal?'플레이어':'배낭'}],
+        note:token.catalog?'기본 수치와 강화 옵션을 합산한 효과입니다.':!check.ok?check.error:state.selected===token.index?'대상에 끌어 놓거나 사용 버튼으로 확정':'클릭하여 선택 · 대상에 끌어 놓으면 사용'};
     }
     if(token.kind==='enemy'){
       const e=state.enemies.find(e=>e.id===token.id&&e.hp>0);if(!e)return null;
@@ -344,7 +377,7 @@
         rows:[{label:'체력',value:`${e.hp} / ${e.maxHp}`},...(e.armor||e.shield?[{label:'보호',value:`장갑 ${e.armor||0} · 방어 ${e.shield||0}`}]:[]),...(c?.damage?[{label:'선택 카드 피해',value:previewFor(c,e)}]:[])],note:state.target===e.id?'현재 선택한 대상':'눌러서 공격 대상으로 선택'};
     }
     if(token.kind==='danger')return {kicker:'턴 종료 예상',title:`체력 −${incomingDamage()}`,description:'살아 있는 적이 예고한 행동만 실행합니다.',rows:[{label:'적 공격 합계',value:incomingRaw()},{label:'방어구로 감소',value:forecast().armorBlocked},{label:'임시 방어',value:state.shield}],note:'적을 먼저 제압하면 그 적의 공격은 취소됩니다.'};
-    if(token.kind==='turn')return {kicker:'턴 종료',title:'적 행동 시작',description:'남은 손패를 버리고 적의 예고 행동을 실행합니다.',rows:[{label:'다음 내 턴',value:'손패 5장 · 에너지 3'}],note:'쉴드·지속 효과의 남은 기간이 1 줄어듭니다. 잔여 쉴드는 자동 충전되지 않습니다.'};
+    if(token.kind==='turn')return {kicker:'턴 종료',title:'적 행동 시작',description:'남은 손패를 유지하고 적의 예고 행동을 실행합니다.',rows:[{label:'다음 내 턴',value:'손패 5장까지 빈자리 보충 · 에너지 3'}],note:'쉴드·지속 효과의 남은 기간이 1 줄어듭니다. 잔여 쉴드는 자동 충전되지 않습니다.'};
     if(token.kind==='hud'){
       if(token.id==='health')return {title:`체력 ${state.hp} / 80`,description:'체력이 0이 되면 이번 탐사의 전리품을 잃습니다.'};
       if(token.id==='energy')return {title:`에너지 ${state.energy}`,description:'카드의 숫자만큼 소모합니다. 새 턴에는 3으로 회복됩니다.'};
@@ -434,6 +467,7 @@
     preview:previewDrag,clear:clearDragPreview,
     use:(index,area)=>playCard(index,state.enemies.find(e=>e.id===area.id&&e.hp>0))
   });
+  inspector.connect($('modal'),'[data-reward]',n=>({kind:'card',catalog:true,id:n.dataset.instance}));
   inspector.connect($('hand'),'[data-index]',n=>({kind:'card',index:Number(n.dataset.index),id:n.dataset.instance||n.dataset.card}));
   inspector.connect($('enemy-targets'),'[data-enemy]',n=>({kind:'enemy',id:Number(n.dataset.enemy)}));
   inspector.connect($('player-status'),'[data-inspect]',n=>({kind:'hud',id:n.dataset.inspect}));

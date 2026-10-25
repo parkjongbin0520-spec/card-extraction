@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const emphasize=text=>String(text??'').split(/(장갑·방어를 무시|에너지 부족|처치|행동 취소|피해|방어|회복|에너지|전체|뽑기|공격|\d+(?:장)?|[+−]\d+)/g).map((part,i)=>i%2?`<strong class="combat-keyword">${escape(part)}</strong>`:escape(part)).join('');
+  const emphasize=text=>String(text??'').split(/(\([+−-]\d+(?:\.\d+)?\)|장갑·방어를 무시|에너지 부족|처치|행동 취소|피해|방어|회복|에너지|전체|뽑기|공격|[+−-]?\d+(?:\.\d+)?%?)/g).map((part,i)=>i%2?`<strong class="combat-keyword${part.startsWith('(')?' added-value':''}">${escape(part)}</strong>`:escape(part)).join('');
   class ContextDetails {
     constructor(element,build,find) {
       this.el=element;this.build=build;this.find=find;this.canHover=matchMedia('(any-hover:hover)').matches;this.current=null;this.pin=null;this.hoverTimer=null;this.leaveTimer=null;this.holdTimer=null;this.keyboard=false;
@@ -62,19 +62,20 @@
       if(this.suspended)return;
       const anchor=this.find(token),data=this.build(token);if(!anchor||!data||!anchor.getClientRects().length)return;
       if(this.current)this.find(this.current.token)?.removeAttribute('aria-describedby');
-      this.current={token,mode};this.el.classList.remove('hidden');this.el.dataset.source=mode;this.el.dataset.kind=token.kind;
+      this.current={token,mode};this.el.classList.remove('hidden');this.el.dataset.source=mode;this.el.dataset.kind=token.kind;this.el.dataset.catalog=String(!!token.catalog);
       this.el.setAttribute('role',mode==='selection'?'dialog':'tooltip');
       this.el.querySelector('[data-inspect-close]').classList.toggle('hidden',mode!=='selection');
       this.el.querySelector('[data-inspect-kicker]').textContent=data.kicker||'상세 정보';
       this.el.querySelector('#inspect-title').textContent=data.title;
       this.el.querySelector('[data-inspect-desc]').innerHTML=emphasize(data.description||'');
       this.el.querySelector('[data-inspect-rows]').innerHTML=(data.rows||[]).map(r=>`<div><span>${escape(r.label)}</span><b>${emphasize(r.value)}</b></div>`).join('');
+      this.el.querySelector('[data-inspect-sections]').innerHTML=(data.sections||[]).map(section=>`<section class="inspect-section"><h4>${escape(section.title)}</h4>${section.items.map(item=>`<p>${emphasize(item)}</p>`).join('')}</section>`).join('');
       this.el.querySelector('[data-inspect-note]').innerHTML=emphasize(data.note||'');
       anchor.setAttribute('aria-describedby','inspect-details');this.sizeDirty=true;this.position();
     }
     position(){
       if(!this.current)return;const anchor=this.find(this.current.token);if(!anchor?.getClientRects().length){this.hide();return;}const a=anchor.getBoundingClientRect();
-      const host=this.el.closest('#app').getBoundingClientRect(),drawer=this.current.token.kind==='card'&&this.current.mode==='selection';
+      const host=this.el.closest('#app').getBoundingClientRect(),drawer=this.current.token.kind==='card'&&!this.current.token.catalog&&this.current.mode==='selection';
       const area=drawer?document.querySelector('.hand-area').getBoundingClientRect():null,key=[host.width,host.height,area?.width,area?.height,drawer].join(':');
       if(this.sizeDirty||key!==this.sizeKey){
         this.el.style.width='';this.el.style.maxHeight='';

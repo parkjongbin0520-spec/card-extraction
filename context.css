@@ -625,3 +625,46 @@ main { display:flex; flex-direction:column; }
 @media(prefers-reduced-motion:reduce) {
   .drag-ghost { transform:none; }
 }
+
+/* Rarity lives on the frame; card effects stay readable on the paper face. */
+.card[data-rarity] { --rarity-dark:#465765; --rarity-mid:#8b9eac; --rarity-light:#e5edf1; border:2px solid var(--rarity-mid); border-radius:5px; isolation:isolate; }
+.card[data-rarity="rare"] { --rarity-dark:#174b31; --rarity-mid:#38a765; --rarity-light:#c3ffd6; }
+.card[data-rarity="epic"] { --rarity-dark:#123d7c; --rarity-mid:#388ce8; --rarity-light:#c9edff; }
+.card[data-rarity="unique"] { --rarity-dark:#482472; --rarity-mid:#a368de; --rarity-light:#f1d2ff; }
+.card[data-rarity="legendary"] { --rarity-dark:#7b5413; --rarity-mid:#edbf3c; --rarity-light:#fff4b4; }
+.card[data-rarity="mystic"] { --rarity-dark:#721e30; --rarity-mid:#e14b60; --rarity-light:#ffd6db; }
+.card[data-rarity]::after { content:""; display:block; position:absolute; inset:0; width:auto; height:auto; padding:3px; border-radius:5px; transform:none; background:linear-gradient(135deg,var(--rarity-dark) 0%,var(--rarity-mid) 18%,var(--rarity-light) 25%,var(--rarity-mid) 32%,var(--rarity-dark) 51%,var(--rarity-mid) 67%,var(--rarity-light) 73%,var(--rarity-mid) 80%,var(--rarity-dark) 100%); -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); mask-composite:exclude; pointer-events:none; z-index:2; }
+.card[data-rarity].selected,.hand .card[data-rarity]:hover:not(:disabled) { border-color:var(--rarity-light); box-shadow:0 0 0 1px var(--rarity-mid),3px 6px 0 var(--rarity-dark),0 8px 18px #06100799; }
+.card[data-rarity] .card-top { position:relative; width:100%; min-height:32px; padding-right:30px; align-items:center; gap:4px; flex-shrink:0; }
+.card[data-rarity] .card-type { display:block; padding:2px 3px; margin-left:auto; font:700 10px/1.3 var(--sans); letter-spacing:0; white-space:nowrap; background:#f5edd9d9; color:var(--rarity-dark); border:1px solid var(--rarity-mid); border-radius:2px; }
+.card[data-rarity] .card-grip { top:-3px; right:-4px; width:30px; height:32px; font-size:25px; }
+.card[data-rarity] .card-desc { display:none; }
+.card[data-rarity] .card-brief { display:block; color:#174f91; font-weight:750; font-size:14px; line-height:1.3; word-break:keep-all; overflow-wrap:anywhere; flex-shrink:0; }
+.card[data-rarity] .effect-value { color:#124d98; font-weight:850; font-size:inherit; }
+.card[data-rarity] .card-risk { display:block; color:#9a472c; font-size:13px; font-weight:650; line-height:1.3; margin-top:5px; flex-shrink:0; }
+.reward-cards .card[data-rarity] .card-top,.collection-grid .card[data-rarity] .card-top { padding-right:0; }
+.reward-cards .card[data-rarity]:has(.card-risk) .card-art,.collection-grid .card[data-rarity]:has(.card-risk) .card-art { display:none; }
+.inspect-details[data-kind="card"] [data-inspect-desc] { white-space:pre-line; }
+.inspect-details[data-kind="card"] .combat-keyword { color:#94caff; }
+.inspect-details[data-kind="card"] .combat-keyword.added-value { color:#ffc075; }
+.inspect-section { border-top:1px solid #82946a77; margin-top:12px; padding-top:10px; }
+.inspect-section h4 { font-size:13px; color:#cbd7b3; margin:0 0 7px; }
+.inspect-section p { margin:5px 0; font-size:14px; line-height:1.5; color:#e3e6d5; }
+.inspect-section:last-child h4 { color:#e8c7a3; }
+.inspect-details[data-catalog="true"] { z-index:22; }
+[data-inspect-sections]:empty { display:none; }
+.discard-summary { display:inline; }
+@media(min-width:1600px) {
+  .hand .card[data-rarity] .card-brief { font-size:16px; }
+}
+@media(max-width:800px) {
+  .hand .card[data-rarity] .card-brief { font-size:13px; line-height:1.25; }
+  .hand .card[data-rarity] .card-risk { font-size:12px; line-height:1.2; margin-top:4px; }
+  .reroll-btn small { max-width:60px; white-space:normal; line-height:1.1; }
+}
+@media(orientation:landscape) and (max-height:360px) {
+  .hand .card[data-rarity] .card-top { min-height:24px; }
+  .hand .card[data-rarity] .card-brief { font-size:11px; line-height:1.15; }
+  .hand .card[data-rarity] .card-risk { font-size:11px; margin-top:3px; }
+  .hand .card[data-rarity] .card-type { font-size:9px; padding:1px 2px; }
+}

@@ -108,6 +108,17 @@
     return card;
   }
   function riskCapacity(rarity) { return [0,0,1,2,3,4][rarities.indexOf(rank(rarity))]; }
+  function breakdown(source) {
+    const card=compile(source);if(!card)return null;
+    const base=compile(card.templateId);
+    const effects={};
+    for(const type of ['cost','damage','hits','block','shieldDuration','heal','draw','energyGain','delay','targets']){
+      const fallback=type==='targets'?1:0;
+      const original=Number(base[type]??fallback),total=Number(card[type]??fallback);
+      effects[type]={base:original,bonus:total-original,total};
+    }
+    return {effects,options:typeof source==='object'?clone(normalizeOptions(source.options,card.rarity)):[],risks:clone(card.risks)};
+  }
   function newSave(legacy={}) {
     const starters=baseDeck.map(id=>create(id));
     const unlocked=[...new Set((Array.isArray(legacy.cards)?legacy.cards:[]).filter(id=>known(id)&&!baseTypes.has(id)))];
@@ -198,5 +209,5 @@
       return {save,storageAvailable:available,notice:available?(legacyRaw!==null?'기존 보관함을 카드별 저장 형식으로 옮겼습니다.':''):'저장할 수 없어 현재 창에서만 진행합니다.'};
     } catch {return {save:newSave(),storageAvailable:false,notice:'저장소를 사용할 수 없어 현재 창에서만 보존됩니다.'};}
   }
-  return Object.freeze({templates,baseDeck,rarities,keys:KEYS,create,compile,riskCapacity,load,persist,normalize,sync,starterRefs,loadoutRefs,migrate:newSave});
+  return Object.freeze({templates,baseDeck,rarities,keys:KEYS,create,compile,breakdown,riskCapacity,load,persist,normalize,sync,starterRefs,loadoutRefs,migrate:newSave});
 });

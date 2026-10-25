@@ -7,9 +7,9 @@
   <meta name="theme-color" content="#151815">
   <title>DEAD HAND — 카드 익스트랙션</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='5' fill='%23fb8149'/%3E%3Cpath d='m11 8 18 24M29 8 11 32' stroke='%23101713' stroke-width='3'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=6">
-  <link rel="stylesheet" href="battle.css?v=6">
-  <link rel="stylesheet" href="context.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="battle.css?v=7">
+  <link rel="stylesheet" href="context.css?v=7">
   <link rel="preload" as="image" href="assets/field-plates.svg">
 </head>
 <body>
@@ -30,7 +30,7 @@
   <div id="app">
     <header class="topbar">
       <a class="brand" href="./" aria-label="데드 핸드 시작 화면"><span class="brand-mark">Ⅹ</span><span>DEAD<span class="brand-light">HAND</span><small>TACTICAL CARD EXTRACTION</small></span></a>
-      <div class="header-divider"></div><span class="build-label">PLAYABLE PROTOTYPE <span>06.00</span></span>
+      <div class="header-divider"></div><span class="build-label">PLAYABLE PROTOTYPE <span>07.00</span></span>
       <nav class="top-actions" aria-label="게임 메뉴">
         <button id="collection-btn" class="nav-btn" aria-label="카드 보관함" title="카드 보관함"><svg><use href="#i-cards"/></svg><span>보관함</span><span id="collection-count" class="tiny-badge">0</span></button>
         <button id="help-btn" class="nav-btn" aria-label="플레이 가이드" title="플레이 가이드"><span class="help-symbol">?</span><span>도움말</span></button>
@@ -97,7 +97,7 @@
           <div class="action-preview" aria-live="polite"><span class="preview-heading">선택한 대상</span><b id="preview-target">대상을 선택하세요</b><p id="action-preview">카드를 선택하면 효과를 확인할 수 있습니다.</p><small id="preview-cost">에너지 3 / 3</small></div>
           <div class="utility-actions">
             <button id="bag-btn" class="bag-btn" aria-label="탐사 배낭 열기" title="탐사 배낭"><svg aria-hidden="true"><use href="#i-backpack"/></svg><span>배낭</span><span id="bag-preview" class="drop-effect-preview hidden" aria-live="off"></span></button>
-            <button id="reroll-btn" class="reroll-btn" aria-label="에너지 1로 손패 리롤, 게임 턴마다 1회" title="에너지 1 · 턴당 1회"><svg aria-hidden="true"><use href="#i-reroll"/></svg><span>리롤<small>ϟ1 · 턴당 1회</small></span></button>
+            <button id="reroll-btn" class="reroll-btn" aria-label="버림 카드 회수 후 손패 다시 뽑기, 턴을 넘깁니다" title="버림 카드 회수 · 턴 종료"><svg aria-hidden="true"><use href="#i-reroll"/></svg><span>리롤<small>턴 넘기고 다시 뽑기</small></span></button>
           </div>
         <div class="battle-actions">
           <button id="fire-btn" class="fire-action" disabled><svg><use href="#i-crosshair"/></svg><span><strong id="fire-label">카드를 선택하세요</strong><small id="fire-target">대상 선택</small></span><b>사용 ↗</b></button>
@@ -113,15 +113,15 @@
   <div id="drag-ghost" class="drag-ghost hidden" aria-hidden="true"></div>
   <div id="drag-status" class="drag-status hidden" role="status" aria-live="polite"></div>
   <aside id="inspect-details" class="inspect-details hidden" role="dialog" aria-modal="false" aria-labelledby="inspect-title">
-    <button data-inspect-close aria-label="상세 정보 닫기">×</button><small data-inspect-kicker>상세 정보</small><h3 id="inspect-title"></h3><p data-inspect-desc></p><div data-inspect-rows></div><small data-inspect-note></small>
+    <button data-inspect-close aria-label="상세 정보 닫기">×</button><small data-inspect-kicker>상세 정보</small><h3 id="inspect-title"></h3><p data-inspect-desc></p><div data-inspect-rows></div><div data-inspect-sections></div><small data-inspect-note></small>
   </aside>
   <div id="modal-backdrop" class="modal-backdrop hidden"><section id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1"></section></div>
   </div>
-  <script src="scene.js?v=6"></script>
-  <script src="inspect.js?v=6"></script>
-  <script src="drag.js?v=6"></script>
-  <script src="card-model.js?v=6"></script>
-  <script src="combat.js?v=6"></script>
-  <script src="game.js?v=6"></script>
+  <script src="scene.js?v=7"></script>
+  <script src="inspect.js?v=7"></script>
+  <script src="drag.js?v=7"></script>
+  <script src="card-model.js?v=7"></script>
+  <script src="combat.js?v=7"></script>
+  <script src="game.js?v=7"></script>
 </body>
 </html>
