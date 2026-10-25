@@ -81,7 +81,7 @@
     const rarity=rarities.includes(overrides.rarity)?overrides.rarity:template.rarity;
     return {uid:uidValid(overrides.uid)?overrides.uid:nextUid(),templateId,rarity,
       options:normalizeOptions(overrides.options,rarity),risks:normalizeRisks(overrides.risks),
-      erosion:number(overrides.erosion,0,0,100),unstable:overrides.unstable===true};
+      erosion:number(overrides.erosion,0,0,100),unstable:overrides.unstable===true,loan:overrides.loan===true};
   }
   function compile(source) {
     const instance=typeof source==='string'?null:source;
@@ -92,7 +92,7 @@
       risks:clone(template.risks||[])};
     if (instance) {
       card.uid=instance.uid;
-      card.erosion=number(instance.erosion,0,0,100);card.unstable=instance.unstable===true;
+      card.loan=instance.loan===true;card.erosion=number(instance.erosion,0,0,100);card.unstable=instance.unstable===true;
       const options=normalizeOptions(instance.options,rarity);
       for (const item of options) {
         if (item.type==='pierce'||item.type==='shatter') { card[item.type]=!!(card[item.type]||item.value); continue; }
@@ -137,7 +137,7 @@
     const starterIds=[...new Set((Array.isArray(raw.starterIds)?raw.starterIds:[]).filter(id=>present.has(id)))];
     const cards=[...new Set(instances.filter(c=>!c.unstable&&!baseTypes.has(c.templateId)).map(c=>c.templateId))];
     const loadout=[...new Set((Array.isArray(raw.loadout)?raw.loadout:[]).filter(id=>typeof id==='string'&&cards.includes(id)))].slice(0,2);
-    return {version:2,credits:integer(raw.credits,0,0,Number.MAX_SAFE_INTEGER),runs:integer(raw.runs,0,0,Number.MAX_SAFE_INTEGER),cards,loadout,instances,starterIds};
+    return {version:2,credits:integer(raw.credits,0,0,Number.MAX_SAFE_INTEGER),runs:integer(raw.runs,0,0,Number.MAX_SAFE_INTEGER),cards,loadout,instances,starterIds,...(raw.campaign&&typeof raw.campaign==='object'?{campaign:clone(raw.campaign)}:{})};
   }
   function sync(save) {
     const normalized=normalize(save);if (!normalized) return null;
