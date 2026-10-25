@@ -8,8 +8,8 @@ const base=process.env.GAME_URL||'http://127.0.0.1:8000';
  const errors=[];
  async function pageFor(viewport={width:1366,height:768},touch=false){
   const p=await browser.newPage({viewport,hasTouch:touch,isMobile:touch});p.on('pageerror',e=>errors.push(e.message));
-  await p.route('**/game.js*',async route=>{const res=await route.fetch();const body=(await res.text()).replace(/\}\)\(\);\s*$/, 'window.__feedback={state,cardFor,playCard,endTurn,resolveEnemyTurn,reroll,renderHUD,projection,showCollection};})();');await route.fulfill({response:res,body});});
-  await p.goto(base);await p.locator('#deploy-btn').click();await p.locator('#route-standard').click();return p;
+  await p.route('**/game.js*',async route=>{const res=await route.fetch();const body=(await res.text()).replace(/\}\)\(\);\s*$/, 'window.__feedback={state,cardFor,playCard,endTurn,resolveEnemyTurn,reroll,renderHUD,projection,showCollection,screens,save};})();');await route.fulfill({response:res,body});});
+  await p.goto(base);await p.locator('#screen-root [data-action=deploy]').click();await p.locator('#route-standard').click();return p;
  }
  const p=await pageFor();
  const s0=await p.evaluate(()=>{const t=__feedback,s=t.state;t.playCard(0,s.enemies[0]);return {hand:[...s.hand],draw:[...s.draw],discard:[...s.discard]};});
@@ -31,8 +31,8 @@ const base=process.env.GAME_URL||'http://127.0.0.1:8000';
  const tooltip=await p.locator('[data-inspect-desc]').innerText();assert.match(tooltip,/12\(\+21\)/);assert.match(tooltip,/0\(\+1\)/);assert.match(await p.locator('[data-inspect-sections]').innerText(),/강화 옵션/);assert.match(await p.locator('[data-inspect-sections]').innerText(),/승화: 3턴/);assert.match(await p.locator('.card-brief').innerText(),/체력 33 회복/);assert.equal(await p.locator('#hand .card-risk').innerText(),'승화 3턴');assert.equal(await p.locator('#hand .card').getAttribute('data-instance'),sample);
  assert.equal(await p.locator('.added-value').count(),3);
  console.log('PASS exact base(+bonus) tooltip, separate options and risk, combined card summary');
- await p.evaluate(()=>__feedback.showCollection());await p.locator('#modal [data-card="suppress"]').hover();await p.waitForFunction(()=>document.querySelector('#inspect-details').dataset.catalog==='true'&&!document.querySelector('#inspect-details').classList.contains('hidden'));assert.match(await p.locator('[data-inspect-sections]').innerText(),/스트레스/);assert.equal(await p.locator('#inspect-details').evaluate(n=>getComputedStyle(n).zIndex),'22');
- console.log('PASS collection cards expose detailed tooltips above the modal');
+ await p.evaluate(id=>{const t=__feedback;t.save.instances.push(structuredClone(t.state.cards[id]));t.save.campaign.pack.push(id);t.save.campaign.run=null;t.state.playing=false;t.screens.show('base');},sample);await p.locator(`[data-detail-card="${sample}"]`).hover();await p.waitForFunction(()=>document.querySelector('#inspect-details').dataset.catalog==='true'&&!document.querySelector('#inspect-details').classList.contains('hidden'));assert.match(await p.locator('[data-inspect-desc]').innerText(),/12\(\+21\)/);assert.equal(await p.locator('#inspect-details').evaluate(n=>getComputedStyle(n).zIndex),'22');
+ console.log('PASS base inventory exposes real instance tooltips above the screen');
  for(const [w,h] of [[1920,1080],[390,844],[844,390],[568,320]]){
   const mobile=await pageFor({width:w,height:h},w<1000);
   await mobile.evaluate(()=>{const t=__feedback,s=t.state;s.hand=CardLibrary.rarities.map((rarity,i)=>{const c=CardLibrary.create(['shot','pierce','suppress','heal','bulwark','fieldAid'][i],{rarity,...(i===3?{options:[{type:'heal',value:21,tier:'epic'},{type:'energyGain',value:1,tier:'rare'},{type:'draw',value:1,tier:'unique'}],risks:[{type:'seal',amount:1,turns:3}]}:{})});s.cards[c.uid]=c;return c.uid});t.renderHUD();document.getElementById('scene-message').classList.remove('visible');});

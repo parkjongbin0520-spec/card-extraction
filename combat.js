@@ -98,7 +98,8 @@
     if (strongest(next, 'seal')) next.shieldLayers = [];
     next.shield = shield(next);
     if (strongest(next, 'curse')) events.push({type:'reroll'});
-    const ids = needsEnemy ? (card.aoe ? next.enemies.filter(e => e.hp > 0).map(e => e.id) : [targetId]) : [];
+    const living=next.enemies.filter(e=>e.hp>0).map(e=>e.id);
+    const ids = needsEnemy ? (card.aoe ? living : [targetId,...living.filter(id=>id!==targetId)].slice(0,Math.max(1,integer(card.targets,1)))) : [];
     return {ok:true, state:next, events, ids, energyCost, hpCost};
   }
 
@@ -233,7 +234,25 @@
       if (enemy.hp <= 0) continue;
       if (enemy.wait > 0) { enemy.wait--; continue; }
       const action = currentAction(enemy);
-      if (action.type === 'guard') {
+      if (action.card) {
+        // Each ready enemy resolves exactly one actual card using the same pipeline.
+        // The enemy deck is restricted to deterministic attack/guard cards: no combos.
+        const card=action.card;
+        const mirror={hp:enemy.hp,maxHp:enemy.maxHp,armor:enemy.armor||0,energy:99,
+          shieldLayers:enemy.shield?[{amount:enemy.shield,turns:9999}]:[],statuses:[],
+          enemies:[{id:'player',hp:next.hp,maxHp:next.maxHp,armor:effectiveArmor(next),shield:shield(next),wait:0}]};
+        const result=play(mirror,card,'player');
+        if(result.ok){
+          enemy.hp=result.state.hp;enemy.shield=result.state.shield;
+          events.push({type:'enemy-card',id:enemy.id,name:card.name,card});
+          if(card.block)events.push({type:'enemy-guard',id:enemy.id,amount:result.block,shield:enemy.shield});
+          for(const hit of result.events.filter(e=>e.type==='hit')){
+            if(hit.shattered)next.shieldLayers=[];
+            const before=next.hp;consumeShield(next,hit.absorbed+hit.hpDamage);next.hp=Math.max(0,next.hp-hit.hpDamage);
+            events.push({type:'enemy-hit',id:enemy.id,raw:integer(card.damage),armorBlocked:card.pierce?0:Math.max(0,integer(card.damage)-hit.raw),absorbed:hit.absorbed,damage:before-next.hp,hp:next.hp});
+          }
+        }
+      } else if (action.type === 'guard') {
         const amount = integer(action.amount, 6);
         enemy.shield += amount;
         events.push({type:'enemy-guard', id:enemy.id, amount, shield:enemy.shield});
@@ -259,7 +278,7 @@
     let raw = 0, armorBlocked = 0, shieldBlocked = 0, damage = 0;
     const sources = [];
     for (const enemy of due) {
-      const amount = integer(currentAction(enemy).amount), armorAbsorbed = Math.min(amount, armor), hit = consumeShield(next, amount - armorAbsorbed);
+      const action=currentAction(enemy),amount=integer(action.amount),armorAbsorbed=Math.min(Math.max(0,amount-(action.card&&amount>0?1:0)),armor),hit=consumeShield(next,amount-armorAbsorbed);
       raw += amount; armorBlocked += armorAbsorbed; shieldBlocked += hit.absorbed; damage += hit.damage;
       sources.push({id:enemy.id, raw:amount, armorBlocked:armorAbsorbed, shieldBlocked:hit.absorbed, damage:hit.damage});
     }

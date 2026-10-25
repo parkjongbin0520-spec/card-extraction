@@ -287,3 +287,13 @@ test('preview agrees with every possible three-hit result through armor, shield 
     near(projection.killChance, kills / 8);
   }
 });
+
+test('enemy cards share player effects but resolve only one card per ready phase',()=>{
+ const s={hp:30,maxHp:80,armor:2,energy:3,statuses:[],shieldLayers:[{amount:4,turns:2}],enemies:[{id:0,hp:20,maxHp:20,shield:0,wait:0,actionIndex:0,actions:[{type:'attack',amount:9,delay:0,card:{type:'attack',name:'시험 사격',cost:0,damage:9,draw:3,energyGain:3}},{type:'guard',amount:6,delay:1,card:{type:'defense',name:'시험 엄폐',cost:0,block:6}}]}]};
+ const r=Rules.round(s);assert.equal(r.events.filter(x=>x.type==='enemy-card').length,1);assert.equal(r.state.hp,27);assert.equal(r.state.enemies[0].actionIndex,1);assert.equal(r.state.enemies[0].wait,1);assert.equal(r.state.energy,3);assert.equal(Rules.forecast(s).damage,3);
+});
+
+test('multi-target options prioritize the chosen enemy and do not repeat self effects',()=>{
+ const s={hp:50,maxHp:80,armor:0,energy:3,statuses:[],shieldLayers:[],enemies:[0,1,2].map(id=>({id,hp:20,maxHp:20,armor:0,shield:0,wait:0}))};
+ const r=Rules.play(s,{type:'attack',cost:1,damage:5,targets:2,heal:3},2);assert.deepEqual(r.state.enemies.map(x=>x.hp),[15,20,15]);assert.equal(r.state.hp,53);assert.deepEqual(Rules.preview(s,{type:'attack',cost:1,damage:5,targets:2},2).targets.map(x=>x.id),[2,0]);
+});
