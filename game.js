@@ -38,19 +38,25 @@
   }
   let save = loadSave();
   function persist() { try {localStorage.setItem(STORAGE_KEY,JSON.stringify(save));} catch {storageAvailable=false;} }
-  const state={playing:false,mode:'briefing',phase:'player',zone:0,route:'standard',hp:80,shield:0,energy:3,turn:1,
+  const state={playing:false,mode:'briefing',phase:'player',zone:0,route:'standard',hp:80,armor:1,shield:0,energy:3,turn:1,
     loot:0,kills:0,cleared:0,hand:['shot','burst','guard','scan','shot'],draw:[],discard:[],runCards:[],
     selected:-1,target:0,enemies:[],battleReward:120,rewarded:false,time:0,shotAt:-1000,shotTarget:-1};
   const touchDevice=matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>0;
   document.documentElement.classList.toggle('touch-device',touchDevice);
-  let activeModal=null,focusBeforeModal=null,soundOn=false,audio=null,inspector=null,toastTimer=null,sawHint=false;
+  let activeModal=null,focusBeforeModal=null,soundOn=false,audio=null,inspector=null,toastTimer=null,sawHint=false,cardDrag=null;
   let pendingTimer=null,queuedReward=false,enemyResolutionPending=false,lastTimestamp=0;
   const scene=new BattlefieldScene($('world'));
   const alive=()=>state.enemies.filter(e=>e.hp>0);
   const isPlaying=()=>state.playing&&state.mode==='combat'&&state.phase==='player'&&!activeModal;
   const intentOf=e=>e.pattern[(state.turn-1)%e.pattern.length];
-  const incomingDamage=()=>alive().reduce((n,e)=>n+(intentOf(e)==='attack'?e.atk:0),0);
-  const intentLabel=e=>intentOf(e)==='attack'?`공격 ${e.atk}`:intentOf(e)==='guard'?'방어 +6':'조준 · 다음 턴 공격';
+  const incomingRaw=()=>alive().reduce((n,e)=>n+(intentOf(e)==='attack'?e.atk:0),0);
+  const incomingDamage=()=>alive().reduce((n,e)=>n+(intentOf(e)==='attack'?Math.max(0,e.atk-state.armor):0),0);
+  const nextAction=e=>{
+    let offset=0;while(offset<e.pattern.length&&e.pattern[(state.turn-1+offset)%e.pattern.length]==='charge')offset++;
+    const type=e.pattern[(state.turn-1+offset)%e.pattern.length];
+    return {type,turns:offset+1,value:type==='attack'?e.atk:6};
+  };
+  const keywords=text=>String(text).replace(/(장갑·방어를 무시|방어 무시|에너지 부족|처치|행동 취소|피해|방어|회복|에너지|전체|뽑기|공격|\d+(?:장)?|[+−]\d+)/g,'<strong class="combat-keyword">$1</strong>');
   function sound(kind) {
     if (!soundOn) return;
     try {
@@ -89,8 +95,8 @@
     const c=CARDS[id];
     const disabled=opts.disabled?'disabled':'';
     return `<button class="card ${c.type} ${state.selected===index&&!opts.reward?'selected':''} ${opts.extraClass||''} ${opts.unavailable?'unavailable':''}" data-card="${id}" ${opts.reward?'data-reward="'+id+'"':'data-index="'+index+'"'} ${disabled} aria-label="${c.name}, 에너지 ${c.cost}, ${c.desc}" ${!opts.reward?'aria-pressed="'+(state.selected===index)+'"':''}>
-      <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-type">${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'}</span></span>
-      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-brief">${briefFor(c)}</span><span class="card-desc">${c.desc.replace(/(\d+)/g,'<b class="effect-number">$1</b>')}</span>
+      <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-grip" title="잡아서 적에게 끌기" aria-hidden="true">⠿</span><span class="card-type">${c.type==='attack'?'공격':c.type==='defense'?'방어':c.heal?'회복':'전술'}</span></span>
+      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-brief">${keywords(briefFor(c))}</span><span class="card-desc">${keywords(c.desc)}</span>
       <span class="card-bottom"><span>${opts.reward?'선택':index+1}</span><span>${opts.bottom||`에너지 ${c.cost} 사용`}</span></span></button>`;
   }
 
@@ -107,6 +113,7 @@
   }
   function positionTargets() {
     const scale=scene.width/Math.max(1,$('world').getBoundingClientRect().width);
+    $('enemy-targets').style.setProperty('--enemy-hud-width',Math.min(184,$('viewport').clientWidth*(state.enemies.length>=3?.25:.32))+'px');
     scene.labelSpace=(Math.max(0,...[...$('enemy-targets').querySelectorAll('.enemy-caption')].map(e=>e.offsetHeight))+14)*scale;
     for(const rect of scene.getTargets(state.enemies)){
       const b=$('enemy-targets').querySelector(`[data-enemy="${rect.id}"]`);if(!b)continue;
@@ -114,8 +121,15 @@
     }
   }
   function renderEnemies() {
-    $('enemy-targets').innerHTML=alive().map(e=>`<button class="enemy-target ${state.target===e.id?'targeted':''}" data-enemy="${e.id}" aria-pressed="${state.target===e.id}" aria-label="${e.name}, 체력 ${e.hp}/${e.maxHp}, ${intentLabel(e)}" ${!isPlaying()?'disabled':''}>
-      <span class="enemy-caption"><span class="enemy-hp"><i style="width:${e.hp/e.maxHp*100}%"></i></span><span class="enemy-mini"><b>${e.hp}</b><span class="intent-pill ${intentOf(e)}"><i aria-hidden="true">${intentOf(e)==='attack'?'↘':intentOf(e)==='guard'?'◇':'◎'}</i><b>${intentOf(e)==='attack'?e.atk:intentOf(e)==='guard'?6:'준비'}</b></span></span></span><span class="target-corners"></span></button>`).join('');
+    $('enemy-targets').innerHTML=alive().map(e=>{
+      const action=nextAction(e),now=state.phase==='enemy'&&action.turns===1;
+      return `<button class="enemy-target ${state.target===e.id?'targeted':''}" data-enemy="${e.id}" aria-pressed="${state.target===e.id}" aria-label="${e.name}, 체력 ${e.hp}/${e.maxHp}, ${action.turns}턴 후 ${action.type==='attack'?'공격':'방어'} ${action.value}" ${!isPlaying()?'disabled':''}>
+        <span class="enemy-caption"><strong class="enemy-name">${e.name}</strong>
+          <span class="enemy-vitals"><span class="enemy-hp"><i class="hp-remaining" style="width:${e.hp/e.maxHp*100}%"></i><i class="hp-loss"></i></span><span class="enemy-hp-value"><b>${e.hp}</b><small>/${e.maxHp}</small></span></span>
+          <span class="enemy-action ${action.type}"><span class="action-countdown"><b>${now?'지금':action.turns}</b><small>${now?'':'턴 후'}</small></span><span class="action-content">${action.type==='attack'?'공격':'방어'} <b>${action.type==='guard'?'+':''}${action.value}</b></span></span>
+          <span class="enemy-preview hidden"></span>
+        </span><span class="target-corners"></span></button>`;
+    }).join('');
     $('enemy-targets').querySelectorAll('[data-enemy]').forEach(b=>b.addEventListener('click',()=>{
       if(!isPlaying())return;state.target=Number(b.dataset.enemy);renderHUD();
       if(state.selected>=0)inspector.select({kind:'card',index:state.selected,id:state.hand[state.selected]});
@@ -123,7 +137,9 @@
     }));positionTargets();$('enemy-targets').classList.toggle('hidden',state.mode!=='combat');
   }
   function renderHUD() {
+    cardDrag?.cancel();
     if(!alive().some(e=>e.id===state.target))state.target=alive()[0]?.id??-1;
+    document.querySelector('.health-track').setAttribute('aria-valuenow',state.hp);$('armor-value').textContent=state.armor;
     $('hp-value').textContent=state.hp;$('hp-bar').style.width=`${state.hp/80*100}%`;
     $('hp-bar').style.background=state.hp<25?'var(--red)':'var(--green)';$('shield-value').textContent=state.shield;
     $('energy-value').textContent=state.energy;
@@ -192,7 +208,7 @@
     const templates=route==='supply'&&index?ZONES[index].enemies.slice(0,-1):ZONES[index].enemies;
     state.enemies=templates.map((e,i)=>({...e,id:i,hp:Math.round(e.hp*(route==='supply'?.85:1)),maxHp:Math.round(e.hp*(route==='supply'?.85:1)),shield:0,hitAt:0,deadAt:0,attackAt:0}));
     state.battleReward=Math.round(ZONES[index].reward*(route==='supply'?.65:1));state.target=0;prepareDeck(index===0);renderHUD();sound('card');
-    if(!sawHint){notify(touchDevice?'카드 선택 → 사용 · 길게 눌러 상세 보기':'카드 선택 → 사용 · 마우스를 올려 상세 보기',3500);sawHint=true;}
+    if(!sawHint){notify(touchDevice?'모서리를 잡아 적 위에 놓으면 사용':'카드를 적에게 끌어 놓으면 사용',3500);sawHint=true;}
   }
   function deploy() {
     clearTimeout(pendingTimer);enemyResolutionPending=false;queuedReward=false;closeModal();
@@ -200,10 +216,11 @@
     $('briefing').classList.add('hidden');$('sector-stamp').classList.add('hidden');openRoute(0);
   }
   function chooseCard(index) {
-    if(!isPlaying())return;const id=state.hand[index];if(!id)return;const c=CARDS[id];
-    state.selected=index;renderHUD();sound('click');inspector?.select({kind:'card',id,index});
+    if(!isPlaying()||cardDrag?.active)return;const id=state.hand[index];if(!id)return;
+    const deselect=state.selected===index;inspector?.hide();state.selected=deselect?-1:index;renderHUD();sound('click');
+    if(!deselect)inspector?.select({kind:'card',id,index});
   }
-  function fire(){if(!isPlaying())return;if(state.selected<0){notify('먼저 카드를 선택하세요.');return;}playCard(state.selected,state.enemies.find(e=>e.id===state.target&&e.hp>0));}
+  function fire(){if(!isPlaying()||cardDrag?.active)return;if(state.selected<0){notify('먼저 카드를 선택하세요.');return;}playCard(state.selected,state.enemies.find(e=>e.id===state.target&&e.hp>0));}
   function damageFor(card,enemy){
     const raw=Math.max(1,card.damage-(card.pierce?0:enemy.armor||0)),absorbed=card.pierce?0:Math.min(enemy.shield,raw);
     return {absorbed,damage:raw-absorbed};
@@ -237,7 +254,7 @@
     pendingTimer=setTimeout(()=>{if(state.mode==='reward'){if(activeModal)queuedReward=true;else showReward();}},650);
   }
   function endTurn(){
-    if(!isPlaying())return;inspector?.hide();state.phase='enemy';state.selected=-1;renderHUD();
+    if(!isPlaying())return;cardDrag?.cancel();inspector?.hide();state.phase='enemy';state.selected=-1;renderHUD();
     for(const e of alive())if(intentOf(e)==='attack')e.attackAt=performance.now();
     pendingTimer=setTimeout(resolveEnemyTurn,420);
   }
@@ -253,7 +270,7 @@
     notify(damage?`체력 −${damage}`:incoming?'공격 방어':'내 턴');
   }
   function showModal(content,wide=false,kind='info'){
-    inspector?.hide();$('scene-message').classList.remove('visible');
+    cardDrag?.cancel();inspector?.hide();$('scene-message').classList.remove('visible');
     if(!activeModal)focusBeforeModal=document.activeElement;activeModal=kind;
     $('modal').className=`modal${wide?' wide':''}`;$('modal').innerHTML=content;$('modal-backdrop').classList.remove('hidden');$('modal').focus();renderHUD();
     $('modal').querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeModal));
@@ -288,13 +305,13 @@
 
   function goHome(){
     clearTimeout(pendingTimer);queuedReward=false;enemyResolutionPending=false;
-    Object.assign(state,{mode:'briefing',phase:'player',playing:false,zone:0,hp:80,shield:0,energy:3,turn:1,loot:0,cleared:0,selected:-1,target:0,discard:[],hand:['shot','burst','guard','scan','shot']});
+    Object.assign(state,{mode:'briefing',phase:'player',playing:false,zone:0,hp:80,armor:1,shield:0,energy:3,turn:1,loot:0,cleared:0,selected:-1,target:0,discard:[],hand:['shot','burst','guard','scan','shot']});
     state.enemies=ZONES[0].enemies.map((e,i)=>({...e,id:i,maxHp:e.hp,shield:0}));
     closeModal();$('briefing').classList.remove('hidden');$('sector-stamp').classList.remove('hidden');renderHUD();
   }
   function showGuide(){
     if(activeModal&&['reward','outcome','route'].includes(activeModal))return;
-    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 03</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>적을 눌러 대상을 선택하고 카드를 고릅니다. 펼쳐진 정보에서 비용·효과를 확인한 뒤 사용으로 확정합니다. 마우스 올리기·Tab 포커스·모바일 길게 누르기로도 설명을 볼 수 있습니다. 방어·회복·전술 카드도 같은 방식으로 사용합니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>↘는 공격, ◇는 방어, ◎ 준비는 다음 턴 공격입니다. 숫자는 행동의 수치입니다. 조준 중인 적은 이번 턴에는 공격하지 않습니다. 턴 종료 후 행동하며 내 방어는 그 턴만 유지됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 새 턴 손패 5장 · 손패 상한 8장. 뽑기 더미가 비면 버린 카드를 섞습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 카드 사용 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
+    showModal(`<button class="modal-close" data-close aria-label="가이드 닫기">×</button><div class="eyebrow">FIELD MANUAL / 03</div><h2 id="modal-title">움직이는 것은 <em>당신의 한 수.</em></h2><p class="modal-copy">정해진 시점에서 모든 적의 의도를 읽고 카드로 행동합니다. 시간 제한은 없습니다.</p><div class="guide-grid"><div class="guide-item"><b>01 / 경로를 선택하세요</b><p>돌파 경로는 높은 보상을 줍니다. 보급 경로는 적이 약하고 승리 시 체력을 8 회복하지만 보상이 적습니다.</p></div><div class="guide-item"><b>02 / 카드와 대상</b><p>적을 눌러 대상을 선택하고 카드를 고릅니다. 같은 카드를 다시 누르면 선택이 해제됩니다. 비용·효과를 확인한 뒤 사용으로 확정합니다. 공격 카드를 적에게 끌면 체력 바에 예상 피해가 표시되고, 그 위에서 손을 떼면 바로 사용됩니다. 적이 없는 곳에 놓으면 취소됩니다. 모바일은 카드 모서리의 ⠿ 손잡이로 끌 수 있습니다. 마우스 올리기·Tab 포커스·모바일 길게 누르기로도 설명을 볼 수 있습니다. 방어·회복·전술 카드도 같은 방식으로 사용합니다.</p></div><div class="guide-item"><b>03 / 적의 의도를 읽으세요</b><p>적 HUD에는 이름·체력·남은 턴·행동이 표시됩니다. 1턴 후는 이번 턴 종료, 2턴 후 공격은 이번 턴 조준 후 다음 턴 공격입니다. 처치하면 해당 행동이 취소됩니다. 방어구 Lv.1은 공격마다 피해를 1 줄입니다. 턴 종료 후 행동하며 내 방어는 그 턴만 유지됩니다.</p></div><div class="guide-item"><b>04 / 귀환해야 당신의 것</b><p>전투 승리 → 보상 카드 선택 → 철수 또는 다음 구역 선택. 실패하면 이번 탐사의 전리품을 잃고 기본 덱과 이전 회수 기록은 보존됩니다.</p></div></div><div class="guide-note">에너지 3 · 새 턴 손패 5장 · 손패 상한 8장. 뽑기 더미가 비면 버린 카드를 섞습니다.<br><span class="key">1–8</span> 카드 <span class="key">← →</span> 대상 <span class="key">F / ENTER</span> 카드 사용 <span class="key">SPACE</span> 턴 종료</div><div class="modal-buttons"><button class="primary-btn" data-close>확인 · 작전 복귀 ${icon('arrow')}</button></div>`,true,'guide');
   }
   function showCollection() {
     if(activeModal&&['reward','outcome'].includes(activeModal))return;
@@ -342,14 +359,36 @@
       return {kicker:'적 정보',title:e.name,description:intent==='attack'?`턴 종료 시 ${e.atk} 피해를 줍니다.`:intent==='guard'?'턴 종료 시 방어 6을 얻습니다.':`이번 턴에는 공격하지 않고 다음 턴 ${e.atk} 피해를 준비합니다.`,
         rows:[{label:'체력',value:`${e.hp} / ${e.maxHp}`},...(e.armor||e.shield?[{label:'보호',value:`장갑 ${e.armor||0} · 방어 ${e.shield||0}`}]:[]),...(c?.damage?[{label:'선택 카드 피해',value:damageFor(c,e).damage}]:[])],note:state.target===e.id?'현재 선택한 대상':'눌러서 공격 대상으로 선택'};
     }
-    if(token.kind==='danger')return {kicker:'턴 종료 예상',title:`체력 −${Math.max(0,incomingDamage()-state.shield)}`,description:'살아 있는 적이 예고한 행동만 실행합니다.',rows:[{label:'공격 합계',value:incomingDamage()},{label:'내 방어',value:state.shield}],note:'적을 먼저 제압하면 그 적의 공격은 취소됩니다.'};
+    if(token.kind==='danger')return {kicker:'턴 종료 예상',title:`체력 −${Math.max(0,incomingDamage()-state.shield)}`,description:'살아 있는 적이 예고한 행동만 실행합니다.',rows:[{label:'적 공격 합계',value:incomingRaw()},{label:'방어구로 감소',value:incomingRaw()-incomingDamage()},{label:'임시 방어',value:state.shield}],note:'적을 먼저 제압하면 그 적의 공격은 취소됩니다.'};
     if(token.kind==='turn')return {kicker:'턴 종료',title:'적 행동 시작',description:'남은 손패를 버리고 적의 예고 행동을 실행합니다.',rows:[{label:'다음 내 턴',value:'손패 5장 · 에너지 3'}],note:'내 방어는 이번 적 턴이 끝나면 사라집니다.'};
     if(token.kind==='hud'){
       if(token.id==='health')return {title:`체력 ${state.hp} / 80`,description:'체력이 0이 되면 이번 탐사의 전리품을 잃습니다.'};
       if(token.id==='energy')return {title:`에너지 ${state.energy}`,description:'카드의 숫자만큼 소모합니다. 새 턴에는 3으로 회복됩니다.'};
-      if(token.id==='shield')return {title:`방어 ${state.shield}`,description:'이번 적 턴의 피해를 먼저 흡수하고 턴이 끝나면 사라집니다.'};
+      if(token.id==='armor')return {title:`방어구 Lv.${state.armor}`,description:`적의 공격 한 번마다 피해를 ${state.armor} 줄입니다. 그다음 임시 방어로 흡수합니다. 기본 방어구는 탐사 내내 유지됩니다.`};
+      if(token.id==='shield')return {title:`임시 방어 ${state.shield}`,description:'이번 적 턴의 피해를 먼저 흡수하고 턴이 끝나면 사라집니다.'};
     }
     return null;
+  }
+  function clearDragPreview(){
+    state.dragTarget=-1;state.dragCard=false;
+    for(const node of $('enemy-targets').querySelectorAll('[data-enemy]')){
+      const e=state.enemies.find(e=>e.id===Number(node.dataset.enemy));if(!e)continue;
+      node.classList.remove('drag-preview','drag-hover','preview-lethal','preview-unavailable');
+      node.querySelector('.hp-remaining').style.width=e.hp/e.maxHp*100+'%';node.querySelector('.hp-loss').style.width='0%';
+      node.querySelector('.enemy-preview').classList.add('hidden');
+    }
+  }
+  function previewDrag(index,id){
+    clearDragPreview();const c=CARDS[state.hand[index]],target=state.enemies.find(e=>e.id===id&&e.hp>0);if(!c?.damage||!target)return;
+    state.dragTarget=id;state.dragCard=true;
+    for(const e of c.aoe?alive():[target]){
+      const node=$('enemy-targets').querySelector(`[data-enemy="${e.id}"]`);if(!node)continue;
+      const {damage}=damageFor(c,e),after=Math.max(0,e.hp-damage),valid=c.cost<=state.energy;
+      node.classList.add('drag-preview');node.classList.toggle('drag-hover',e.id===id);node.classList.toggle('preview-lethal',after===0);node.classList.toggle('preview-unavailable',!valid);
+      node.querySelector('.hp-remaining').style.width=after/e.maxHp*100+'%';
+      Object.assign(node.querySelector('.hp-loss').style,{left:after/e.maxHp*100+'%',width:(e.hp-after)/e.maxHp*100+'%'});
+      const p=node.querySelector('.enemy-preview');p.classList.remove('hidden');p.innerHTML=`피해 <strong>${damage}</strong><span>${e.hp} → <b>${after}</b></span>${after===0?'<em>처치 · 행동 취소</em>':''}`;
+    }
   }
   function selectNextTarget(direction){
     if(!isPlaying())return;const list=alive(),index=list.findIndex(e=>e.id===state.target);state.target=list[(index+direction+list.length)%list.length]?.id??-1;renderHUD();
@@ -391,6 +430,14 @@
     scene.draw(state,timestamp);positionTargets();inspector?.position();requestAnimationFrame(frame);
   }
   inspector=new ContextDetails($('inspect-details'),inspectionData,findInspection);
+  cardDrag=new DragToPlay({hand:$('hand'),ghost:$('drag-ghost'),status:$('drag-status'),inspector,
+    cardAt:index=>isPlaying()?CARDS[state.hand[index]]:null,
+    markup:index=>cardMarkup(state.hand[index],index),
+    start:()=>$('scene-message').classList.remove('visible'),
+    available:c=>c.cost<=state.energy,
+    preview:previewDrag,clear:clearDragPreview,
+    use:(index,id)=>{const enemy=state.enemies.find(e=>e.id===id&&e.hp>0);if(enemy)playCard(index,enemy);}
+  });
   inspector.connect($('hand'),'[data-index]',n=>({kind:'card',index:Number(n.dataset.index),id:n.dataset.card}));
   inspector.connect($('enemy-targets'),'[data-enemy]',n=>({kind:'enemy',id:Number(n.dataset.enemy)}));
   inspector.connect(document.querySelector('.combat-hud'),'[data-inspect]',n=>({kind:'hud',id:n.dataset.inspect}));

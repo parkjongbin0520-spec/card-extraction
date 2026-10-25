@@ -280,3 +280,172 @@ main { display:flex; flex-direction:column; }
   .inspect-details[data-kind="card"][data-source="selection"] { padding:10px 12px; }
   .inspect-details[data-kind="card"][data-source="selection"] h3 { font-size:20px; }
 }
+
+/* Decision HUD: health bars, named enemies, explicit action countdowns. */
+.combat-hud { height:82px; flex-basis:82px; gap:20px; }
+.player-status { height:68px; gap:20px; align-items:center; }
+.player-health { min-width:160px; width:clamp(160px,13vw,260px); cursor:help; }
+.player-health .health-label { padding:0 0 6px; min-height:0; margin:0; display:flex; gap:6px; }
+.resource-name { font:500 13px var(--sans); color:#becba9; }
+.health-label strong { margin-left:auto; font-size:28px; }
+.health-label em { display:inline; font:400 13px var(--mono); color:#9eac90; }
+.health-track { display:block; position:static; margin:0; width:100%; height:9px; background:#0c170f; border:1px solid #6d8060; }
+.health-track > div { height:100%; transition:width .18s; }
+.armor-label { display:flex; align-items:center; gap:7px; cursor:help; white-space:nowrap; }
+.armor-label > svg { width:25px; height:25px; color:#a5c6c1; }
+.armor-label > span { display:flex; flex-direction:column; gap:3px; }
+.armor-label small { font-size:12px; color:#aec0b1; }
+.armor-label strong { font:500 16px var(--mono); color:#bfd4c2; }
+.armor-label b { font-size:25px; color:#e1edda; margin-left:3px; }
+.shield-label,.energy-label { flex-wrap:wrap; column-gap:6px; row-gap:2px; justify-content:center; padding:0; min-width:52px; }
+.shield-label > svg,.energy-label > svg { width:20px; height:20px; }
+.shield-label > .resource-name,.energy-label > .resource-name { display:block; font-size:12px; }
+.shield-label strong,.energy-label > b { flex-basis:100%; text-align:center; margin:0; font-size:28px; line-height:1.1; }
+.shield-label.zero { display:flex; opacity:.65; }
+.shield-label > span { display:block; }
+.enemy-caption { width:var(--enemy-hud-width,160px); gap:6px; padding:9px 10px; border:1px solid #8e9a6d; border-radius:3px; background:linear-gradient(140deg,#233121f2,#131f19ed); box-shadow:2px 3px 0 #09120bd9; bottom:calc(100% + 9px); }
+.targeted .enemy-caption { border:1px solid #d5bf83; box-shadow:0 0 0 1px #deb67d33,2px 3px 0 #09120bd9; }
+.enemy-name { display:block; color:#eee6cf; font:600 clamp(14px,1vw,21px) var(--sans); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.2; }
+.enemy-vitals { display:flex; align-items:center; gap:6px; }
+.enemy-hp { position:relative; height:8px; flex:1; min-width:12px; box-shadow:none; overflow:hidden; }
+.enemy-hp i { position:absolute; left:0; top:0; height:100%; background:#bfcc87; }
+.enemy-hp .hp-loss { width:0; background:repeating-linear-gradient(120deg,#efab76 0 3px,#b96345 3px 6px); }
+.enemy-hp-value { flex-shrink:0; color:#f4eacf; line-height:1; }
+.enemy-hp-value b { font:700 clamp(17px,1.25vw,26px) var(--mono); }
+.enemy-hp-value small { font:400 11px var(--mono); color:#a3b18b; }
+.enemy-action { display:flex; align-items:center; justify-content:space-between; gap:6px; padding-top:5px; border-top:1px solid #8d9e653d; }
+.action-countdown { display:flex; align-items:baseline; gap:3px; color:#c6d2ac; white-space:nowrap; }
+.action-countdown b { font:700 clamp(17px,1.2vw,25px) var(--mono); color:#f0d69c; }
+.action-countdown small { font-size:11px; }
+.action-content { white-space:nowrap; font:600 clamp(13px,.9vw,18px) var(--sans); color:#e1d5b9; }
+.action-content b { font:700 clamp(18px,1.3vw,27px) var(--mono); color:#ffd7a6; }
+.enemy-action.guard .action-content,.enemy-action.guard .action-content b { color:#b5dac9; }
+.enemy-preview { display:flex; flex-wrap:wrap; align-items:baseline; gap:3px; padding-top:6px; border-top:1px solid #d2a66566; color:#efd1a6; font-size:12px; }
+.enemy-preview > strong { font:800 clamp(20px,1.5vw,30px) var(--mono); color:#ffdc9d; }
+.enemy-preview > span { margin-left:auto; color:#ded9b7; font:400 12px var(--mono); }
+.enemy-preview > span b { font-size:16px; color:#ffe2aa; }
+.enemy-preview em { flex-basis:100%; color:#ffd398; font-style:normal; font-weight:700; }
+.drag-preview .enemy-caption { border-color:#eecf87; background:linear-gradient(135deg,#394128f7,#26301af5); }
+.preview-unavailable .enemy-caption { border-color:#c48476; }
+.preview-unavailable .enemy-preview { color:#e6a28d; }
+.preview-lethal .enemy-action { opacity:.5; text-decoration:line-through; }
+.drag-hover .target-corners { opacity:1; }
+.drag-hover .enemy-caption { box-shadow:0 0 0 2px #e9c98188,0 0 26px #edbd5433; }
+.combat-keyword { font-weight:800; color:inherit; font-size:1.12em; }
+.hand .card-brief { display:flex; align-items:baseline; gap:3px; flex-wrap:wrap; color:#4d5837; }
+.hand .card-brief .combat-keyword { font-size:1.18em; color:#293c25; }
+.hand .card-brief .combat-keyword:first-child { font:800 clamp(22px,1.7vw,32px) var(--mono); color:#644128; }
+.hand .card.defense .card-brief .combat-keyword:first-child { color:#345e4c; }
+.hand .card.utility .card-brief .combat-keyword:first-child { color:#455c30; }
+.inspect-details [data-inspect-desc] .combat-keyword { color:#ffdaa1; }
+.inspect-details [data-inspect-note] .combat-keyword { color:#e5d6ad; }
+.card-grip { position:absolute; top:7px; right:7px; display:grid; place-items:center; width:36px; height:36px; font-size:28px; color:#736b4c; line-height:1; border:1px solid #897d5344; border-radius:4px; cursor:grab; touch-action:none!important; }
+.reward-cards .card-grip,.collection-grid .card-grip { display:none; }
+.hand .card { position:relative; touch-action:pan-x; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+.hand .card.drag-source { opacity:.35; transform:none; }
+.drag-ghost { position:fixed; z-index:25; width:108px; height:145px; pointer-events:none; filter:drop-shadow(0 8px 10px #0008); transform:rotate(-6deg); }
+.drag-ghost .card { width:100%; min-width:0; height:100%; padding:8px 10px; border:2px solid #b4b58c; background:#e2d6ad; color:#293421; border-radius:4px; }
+.drag-ghost .card-top { min-height:20px; }
+.drag-ghost .card-cost { width:28px; height:28px; background:none; border:0; padding:0; }
+.drag-ghost .card-cost b { font:800 24px var(--mono); }
+.drag-ghost .card-art { min-height:22px; height:34px; margin:2px 0 6px; }
+.drag-ghost .card-art svg { width:30px; height:30px; }
+.drag-ghost .card-name { font-size:14px; }
+.drag-ghost .card-brief { display:block; font-size:14px; color:#4d5837; }
+.drag-ghost .card-type,.drag-ghost .card-desc,.drag-ghost .card-bottom,.drag-ghost .card-cost small,.drag-ghost .card-grip { display:none; }
+.drag-ghost.can-drop .card { border-color:#ffdc96; box-shadow:0 0 0 2px #6e814f; }
+.drag-status { position:fixed; z-index:24; left:50%; top:calc(env(safe-area-inset-top,0px) + 8px); transform:translateX(-50%); max-width:90vw; padding:10px 16px; background:#1b281bf5; border:1px solid #a9b48b; box-shadow:0 4px 16px #0006; border-radius:4px; font:600 15px var(--sans); color:#e2e4ce; pointer-events:none; text-align:center; }
+.drag-status.valid { color:#ffe1a8; border-color:#e1bc7c; }
+.dragging-card { cursor:grabbing; }
+.dragging-card .hand { scroll-behavior:auto; }
+[data-inspect]:focus-visible { outline:2px solid #ebcd95; outline-offset:3px; }
+@media(min-width:1600px) {
+  .combat-hud { height:88px; flex-basis:88px; }
+  .player-status { gap:26px; }
+  .resource-name,.armor-label small { font-size:15px; }
+}
+@media(max-width:1000px) {
+  .combat-hud { gap:12px; }
+  .mission-panel { display:none!important; }
+}
+@media(max-width:800px) {
+  .combat-hud { flex-wrap:wrap; height:104px; flex-basis:104px; gap:0 12px; padding:4px 12px 7px; align-content:space-between; }
+  .enemy-intent { min-height:28px; padding:3px 8px; order:1; }
+  .phase-banner { order:0; flex:1; }
+  .phase-banner b { font-size:14px; }
+  .player-status { order:2; flex:0 0 100%; height:58px; margin:0; gap:12px; justify-content:space-between; }
+  .player-health { min-width:92px; width:auto; flex:1; max-width:210px; }
+  .player-health .health-label { gap:4px; padding-bottom:5px; }
+  .health-label strong { font-size:24px; }
+  .health-icon { font-size:17px; }
+  .health-label .resource-name { display:none; }
+  .health-label em { font-size:11px; }
+  .health-track { height:8px; }
+  .armor-label { gap:4px; }
+  .armor-label > svg { width:20px; height:20px; }
+  .armor-label small { font-size:11px; }
+  .armor-label strong { font-size:12px; }
+  .armor-label b { font-size:23px; }
+  .shield-label,.energy-label { min-width:42px; gap:1px 3px; }
+  .shield-label > svg,.energy-label > svg { width:16px; height:16px; }
+  .shield-label .resource-name,.energy-label .resource-name { font-size:11px; }
+  .shield-label strong,.energy-label > b { font-size:26px; }
+  .enemy-caption { padding:7px; gap:5px; }
+  .enemy-name { font-size:14px; }
+  .enemy-vitals { flex-direction:column-reverse; align-items:stretch; gap:4px; }
+  .enemy-hp-value { text-align:right; }
+  .enemy-hp { flex:none; width:100%; height:7px; }
+  .enemy-hp-value b { font-size:19px; }
+  .enemy-action { gap:2px; }
+  .action-countdown { gap:2px; }
+  .action-countdown b { font-size:18px; }
+  .action-countdown small { font-size:10px; }
+  .action-content { font-size:12px; }
+  .action-content b { font-size:20px; }
+  .card-grip { width:32px; height:32px; right:4px; top:4px; font-size:25px; }
+  .hand .card-brief .combat-keyword:first-child { font-size:23px; }
+  .hand .card-art { min-height:18px; margin-bottom:3px; }
+  .enemy-preview > span { flex-basis:100%; margin-left:0; }
+  .enemy-preview > strong { font-size:24px; }
+}
+@media(max-width:350px) {
+  .combat-hud { padding-inline:9px; }
+  .player-status { gap:7px; }
+  .player-health { min-width:84px; }
+  .enemy-caption { padding:6px 5px; }
+  .enemy-name { font-size:13px; }
+  .action-content { font-size:11px; }
+  .action-content b { font-size:18px; }
+}
+@media(orientation:landscape) and (max-height:600px) and (max-width:1200px) {
+  main { grid-template-rows:70px minmax(0,1fr); }
+  .combat-hud { flex-wrap:nowrap; height:70px; gap:12px; padding:3px 12px; }
+  .mission-panel { display:none!important; }
+  .phase-banner { flex:0 0 auto; order:0; }
+  .enemy-intent { order:1; }
+  .player-status { order:2; flex:1; height:60px; max-width:520px; margin-left:auto; gap:12px; }
+  .player-health { min-width:90px; width:110px; }
+  .enemy-caption { padding:5px 6px; gap:4px; }
+  .enemy-vitals { flex-direction:row; align-items:center; }
+  .enemy-hp { flex:1; width:auto; }
+  .enemy-hp-value b { font-size:18px; }
+  .enemy-hp-value small { display:none; }
+  .enemy-name { font-size:13px; }
+  .action-countdown b { font-size:17px; }
+  .action-content,.action-countdown small { font-size:11px; }
+  .action-content b { font-size:18px; }
+  .hand .card-brief .combat-keyword:first-child { font-size:23px; }
+  .enemy-preview { font-size:11px; }
+  .enemy-preview > span { flex-basis:auto; margin-left:auto; font-size:11px; }
+  .enemy-preview > strong { font-size:20px; }
+  .drag-ghost { width:86px; height:115px; }
+}
+@media(orientation:landscape) and (max-height:360px) and (max-width:1200px) {
+  .phase-banner { display:none!important; }
+  .enemy-caption { gap:3px; }
+  .hand .card-art { display:none; }
+  .hand .card-name { margin-top:6px; }
+}
+/* Preview attaches below the HUD without moving the enemy or its drop area. */
+.enemy-preview { position:absolute; top:calc(100% + 4px); left:-1px; width:calc(100% + 2px); padding:6px 8px; border:1px solid #d4b67a; border-radius:3px; background:#26321cf5; box-shadow:0 3px 9px #0006; }
+.preview-unavailable .enemy-preview { background:#392c23f5; border-color:#c48476; }

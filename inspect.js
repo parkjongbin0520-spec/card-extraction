@@ -2,6 +2,7 @@
 (() => {
   'use strict';
   const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const emphasize=text=>String(text??'').split(/(장갑·방어를 무시|에너지 부족|처치|행동 취소|피해|방어|회복|에너지|전체|뽑기|공격|\d+(?:장)?|[+−]\d+)/g).map((part,i)=>i%2?`<strong class="combat-keyword">${escape(part)}</strong>`:escape(part)).join('');
   class ContextDetails {
     constructor(element,build,find) {
       this.el=element;this.build=build;this.find=find;this.canHover=matchMedia('(any-hover:hover)').matches;this.current=null;this.pin=null;this.hoverTimer=null;this.leaveTimer=null;this.holdTimer=null;this.keyboard=false;
@@ -55,8 +56,10 @@
       root.addEventListener('contextmenu',e=>{if(nodeFor(e))e.preventDefault();});
     }
     cancelHold(){clearTimeout(this.holdTimer);this.holdTimer=null;this.hold=null;}
-    select(token){clearTimeout(this.hoverTimer);clearTimeout(this.leaveTimer);this.pin=token;this.show(token,'selection');}
+    setSuspended(value){this.suspended=value;if(value)this.hide();}
+    select(token){if(this.suspended)return;clearTimeout(this.hoverTimer);clearTimeout(this.leaveTimer);this.pin=token;this.show(token,'selection');}
     show(token,mode='hover') {
+      if(this.suspended)return;
       const anchor=this.find(token),data=this.build(token);if(!anchor||!data||!anchor.getClientRects().length)return;
       if(this.current)this.find(this.current.token)?.removeAttribute('aria-describedby');
       this.current={token,mode};this.el.classList.remove('hidden');this.el.dataset.source=mode;this.el.dataset.kind=token.kind;
@@ -64,9 +67,9 @@
       this.el.querySelector('[data-inspect-close]').classList.toggle('hidden',mode!=='selection');
       this.el.querySelector('[data-inspect-kicker]').textContent=data.kicker||'상세 정보';
       this.el.querySelector('#inspect-title').textContent=data.title;
-      this.el.querySelector('[data-inspect-desc]').textContent=data.description||'';
-      this.el.querySelector('[data-inspect-rows]').innerHTML=(data.rows||[]).map(r=>`<div><span>${escape(r.label)}</span><b>${escape(r.value)}</b></div>`).join('');
-      this.el.querySelector('[data-inspect-note]').textContent=data.note||'';
+      this.el.querySelector('[data-inspect-desc]').innerHTML=emphasize(data.description||'');
+      this.el.querySelector('[data-inspect-rows]').innerHTML=(data.rows||[]).map(r=>`<div><span>${escape(r.label)}</span><b>${emphasize(r.value)}</b></div>`).join('');
+      this.el.querySelector('[data-inspect-note]').innerHTML=emphasize(data.note||'');
       anchor.setAttribute('aria-describedby','inspect-details');this.sizeDirty=true;this.position();
     }
     position(){
@@ -75,12 +78,12 @@
       const area=drawer?document.querySelector('.hand-area').getBoundingClientRect():null,key=[host.width,host.height,area?.width,area?.height,drawer].join(':');
       if(this.sizeDirty||key!==this.sizeKey){
         this.el.style.width='';this.el.style.maxHeight='';
-        if(drawer){this.el.style.width=Math.min(this.el.offsetWidth,area.width-4)+'px';this.el.style.maxHeight=Math.max(100,area.height-4)+'px';}
+        if(drawer){const field=document.querySelector('#viewport').getBoundingClientRect();this.el.style.width=Math.min(this.el.offsetWidth,field.width-20)+'px';this.el.style.maxHeight=Math.max(100,Math.min(260,field.height*.62))+'px';}
         this.sizeDirty=false;this.sizeKey=key;
       }
       const w=this.el.offsetWidth,h=this.el.offsetHeight;
       let x=a.x+a.width/2-w/2,y=a.y-h-12;
-      if(drawer){x=Math.max(area.left+2,Math.min(x,area.right-w-2));y=area.top+2;}
+      if(drawer){const field=document.querySelector('#viewport').getBoundingClientRect();x=Math.max(field.left+10,Math.min(x,field.right-w-10));y=field.bottom-h-8;}
       else if(y<host.top+10)y=a.bottom+12;
       x=Math.max(host.left+10,Math.min(x,host.right-w-10));y=Math.max(host.top+10,Math.min(y,host.bottom-h-10));
       this.el.style.left=x+'px';this.el.style.top=y+'px';

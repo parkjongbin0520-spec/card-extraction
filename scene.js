@@ -110,11 +110,11 @@
         if(e.hp<=0&&now-e.deadAt>650)continue;
         items.push({z:a.z,draw:()=>{
           const death=e.hp<=0?clamp((now-e.deadAt)/650,0,1):0,hit=clamp(1-(now-(e.hitAt||0))/250,0,1),attack=clamp(1-Math.abs(now-(e.attackAt||0)-140)/180,0,1);
-          const selected=state.target===e.id&&e.hp>0,shake=this.reducedMotion?0:Math.sin(now*.065)*hit*5;
+          const selected=(state.dragTarget>=0?state.dragTarget:state.target)===e.id&&e.hp>0,shake=this.reducedMotion?0:Math.sin(now*.065)*hit*5;
           // Grounding shadows remain independent from the upright sprite.
           p.fillStyle=e.drone?'#080e0b77':'#080e0bb5';p.beginPath();p.ellipse(a.x,a.foot-2,a.width*.43,a.height*(e.drone?.045:.035),0,0,Math.PI*2);p.fill();
           if(selected&&state.mode==='combat'){
-            p.strokeStyle=state.selected>=0?'#e6a867':'#c0c795';p.lineWidth=1.5;p.setLineDash([6,5]);p.beginPath();p.ellipse(a.x,a.foot,a.width*.54,a.height*.065,0,0,Math.PI*2);p.stroke();p.setLineDash([]);
+            p.strokeStyle=state.selected>=0||state.dragCard?'#e6a867':'#c0c795';p.lineWidth=1.5;p.setLineDash([6,5]);p.beginPath();p.ellipse(a.x,a.foot,a.width*.54,a.height*.065,0,0,Math.PI*2);p.stroke();p.setLineDash([]);
           }
           const bob=this.reducedMotion?0:e.drone?Math.sin(now*.0016+i)*5:0;
           const breath=this.reducedMotion?0:Math.sin(now*.00115+i)*.008,idleTilt=this.reducedMotion?0:Math.sin(now*.0009+i)*.008;
