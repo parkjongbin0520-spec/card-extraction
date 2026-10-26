@@ -3,7 +3,8 @@ from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
 root = Path(__file__).resolve().parent.parent
-files = sorted((root / "assets/generated").rglob("*.webp"))
+files = sorted((root / "assets/pixel").rglob("*.png"))
+files += [root / "assets/pixel/palette.json"]
 files += sorted((root / "assets/ui").glob("*"))
 files += [root / p for p in (
     "assets/art-manifest.json", "docs/asset-pack.md", "assets.html",

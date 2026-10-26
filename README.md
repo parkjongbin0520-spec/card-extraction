@@ -58,11 +58,11 @@
 
 [에셋 갤러리](assets.html) · [에셋 팩 다운로드](assets/cardkov-art-pack.zip) · [제작·파일 안내](docs/asset-pack.md)
 
-타르코프의 군사 생존 분위기를 참고한 Cardkov 전용 아트입니다. 메뉴·기지·전투 배경 5개, 카드 12종, 장비·아이템 12종, 적 3종·소품 3종, 1인칭 무기와 플레이어 초상, 아틀라스를 포함한 **WebP 38개(약 2.24MiB)**와 **SVG UI 15개(상태·행동 아이콘 20종 포함)**를 사용합니다. AI로 생성한 새 이미지와 직접 작성한 벡터 리소스이며 다른 게임의 추출 에셋을 사용하지 않습니다.
+타르코프의 군사 생존 분위기를 참고한 특징 중심 도트 아트입니다. **적 48×72, 아이템 32×32, 카드 96×64, 배경 480×270픽셀**을 기준으로 공통 24색과 재질별 3단계 명암을 사용합니다. 경계병은 두건·얇은 재킷·긴 소총, 중장갑병은 헬멧·넓은 방탄복·두꺼운 어깨로 구분합니다. 원본이 상세한 사진풍 이미지를 모자이크 처리한 방식이 아니라 단순한 형태의 도트 원화를 새로 제작했습니다.
 
-투명한 적·소품을 배경과 분리하고 기존 깊이 정렬·바닥 그림자·피격·반동을 유지합니다. 카드는 밝은 야전 종이, HUD는 어두운 군용 직물과 금속으로 구분합니다. 화면이 좁거나 설명이 많은 카드는 기존 정보 우선 배치를 유지합니다. 모든 파일은 정적으로 제공되며 실행 중 이미지 생성 API가 필요하지 않습니다.
+메뉴·기지·전투 배경 5개, 카드 12종, 장비·아이템 12종, 적 3종·소품 3종, 무기·초상·아틀라스를 포함한 **무손실 PNG 38개**와 **SVG UI 15개(아이콘 20종 포함)**를 사용합니다. 투명한 적·소품을 공통 저해상도 화면에 깊이 정렬·바닥 그림자와 함께 합성하고 선명하게 확대합니다. 부드러운 보간·노이즈·미세한 크기 변화를 제거하고 피격·반동은 픽셀 단위로 표현합니다. 카드·HUD는 각진 프레임과 단계형 금속빛을 사용하되 한글·수치·툴팁은 선명한 일반 글자를 유지합니다. 모든 파일은 정적이며 실행 중 이미지 생성 API가 필요하지 않습니다.
 
-원본 생성 PNG가 있는 환경에서는 `node tools/build-art.cjs /path/to/generated_images`로 WebP와 목록을 다시 만들 수 있습니다. 원본 파일 대응은 `tools/art-sources.json`에 기록되어 있습니다. 배포본은 이미 변환되어 있으므로 ImageMagick 설치 없이 실행됩니다.
+원본 생성 PNG가 있는 환경에서는 `node tools/build-pixel-art.cjs /path/to/generated_images`로 네이티브 크기·팔레트·투명 픽셀을 적용한 배포 PNG와 목록을 다시 만들 수 있습니다. 원본 대응과 시트 자르기는 `tools/pixel-sources.json`에 기록합니다. 기존 사실적 이미지는 이전 버전 자료이며 새 게임·갤러리·ZIP에서 사용하지 않습니다. 배포본은 변환되어 있으므로 ImageMagick 설치 없이 실행됩니다.
 
 `python3 tools/package-art.py`는 현재 배포용 에셋과 갤러리·문서를 ZIP으로 묶습니다.
 
@@ -74,7 +74,8 @@
 - Playwright/Chromium이 있는 개발 환경: `GAME_URL=http://localhost:8000 node tests/browser-feedback.cjs`
 - 전체 흐름: `GAME_URL=http://localhost:8000 node tests/browser-campaign.cjs`
 - 모바일 창고 드래그·일시 정지/재개: `GAME_URL=http://localhost:8000 node tests/browser-mobile.cjs`
+- 도트 원본 크기·팔레트·투명도·공통 캔버스·드래그: `GAME_URL=http://localhost:8000 node tests/browser-pixel.cjs`
 
-`campaign.js`는 기지/소유/합성/거래, `screens.js`는 메인메뉴/기지/설정, `combat.js`는 공통 카드 효과, `game.js`는 탐사·정비·저장 흐름을 담당합니다. `scene.js`와 `assets/generated/`는 고정 2.5D 공간, `art.js`는 에셋 경로·대체 표시, `asset-theme.css`와 `assets/ui/`는 표면·프레임·HUD, `drag.js`/`inspect.js`는 입력과 상세 설명을 담당합니다. 이미지 로딩 실패 시 기존 자체 SVG·절차형 공간으로 복구합니다. GitHub Pages는 `gh-pages` 루트에서 게시합니다.
+`campaign.js`는 기지/소유/합성/거래, `screens.js`는 메인메뉴/기지/설정, `combat.js`는 공통 카드 효과, `game.js`는 탐사·정비·저장 흐름을 담당합니다. `scene.js`와 `assets/pixel/`은 고정 2.5D 도트 공간, `art.js`는 에셋 경로·대체 표시, `asset-theme.css`와 `assets/ui/`는 표면·프레임·HUD, `drag.js`/`inspect.js`는 입력과 상세 설명을 담당합니다. 이미지 로딩 실패 시 자체 SVG·단순한 절차형 공간으로 복구합니다. GitHub Pages는 `gh-pages` 루트에서 게시합니다.
 
 [전체 기획·결정 기록](docs/systems-roadmap-and-interview.md) · [아트 방향](docs/art-direction-2.5d.md)

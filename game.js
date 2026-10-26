@@ -5,7 +5,7 @@
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
   const fieldIcons = { shield: "shield", bolt: "energy", plus: "health", cards: "draw", box: "warehouse", backpack: "backpack", reroll: "reroll", exit: "extract" };
   const icon = (name) =>
-    `<svg aria-hidden="true"><use href="${fieldIcons[name] ? "assets/ui/field-icons.svg#" + fieldIcons[name] : "#i-" + name}"/></svg>`;
+    `<svg aria-hidden="true"><use href="${fieldIcons[name] ? "assets/ui/field-icons.svg?v=10#" + fieldIcons[name] : "#i-" + name}"/></svg>`;
   const CARDS = CardLibrary.templates,
     BASE_DECK = CardLibrary.baseDeck,
     Rules = CombatRules;
@@ -1200,7 +1200,7 @@
   function showReward() {
     queuedReward = false;
     showModal(
-      `<div class="chest-scene"><div class="eyebrow">SECTOR ${state.zone + 1} / LOOT ROOM</div><h2 id="modal-title">구역 확보. <em>남겨진 보급품.</em></h2><button id="open-chest" class="chest-button"><span class="asset-visual chest-art" aria-hidden="true"><img class="asset-icon" data-art-image src="assets/generated/props/crate.webp" alt="" draggable="false"><svg class="asset-fallback"><use href="#i-box"/></svg></span><strong>상자 열기 · 정비 시작</strong><small>적 장비·물품 회수 / 정비 ${Campaign.tuning.maintenanceTurns}턴</small></button></div>`,
+      `<div class="chest-scene"><div class="eyebrow">SECTOR ${state.zone + 1} / LOOT ROOM</div><h2 id="modal-title">구역 확보. <em>남겨진 보급품.</em></h2><button id="open-chest" class="chest-button"><span class="asset-visual chest-art" aria-hidden="true"><img class="asset-icon" data-art-image src="assets/pixel/props/crate.png?v=10" alt="" draggable="false"><svg class="asset-fallback"><use href="#i-box"/></svg></span><strong>상자 열기 · 정비 시작</strong><small>적 장비·물품 회수 / 정비 ${Campaign.tuning.maintenanceTurns}턴</small></button></div>`,
       true,
       "reward",
     );

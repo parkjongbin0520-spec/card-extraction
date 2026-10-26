@@ -61,6 +61,7 @@
     show(token,mode='hover') {
       if(this.suspended)return;
       const anchor=this.find(token),data=this.build(token);if(!anchor||!data||!anchor.getClientRects().length)return;
+      clearTimeout(this.leaveTimer);
       if(this.current)this.find(this.current.token)?.removeAttribute('aria-describedby');
       this.current={token,mode};this.el.classList.remove('hidden');this.el.dataset.source=mode;this.el.dataset.kind=token.kind;this.el.dataset.catalog=String(!!token.catalog);
       this.el.setAttribute('role',mode==='selection'?'dialog':'tooltip');

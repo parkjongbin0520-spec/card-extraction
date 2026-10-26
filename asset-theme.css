@@ -1,229 +1,98 @@
-/* Original field-kit art direction. Keep mechanics and responsive geometry in the existing sheets. */
+/* Cardkov pixel field kit: three-tone surfaces, angular hardware, crisp normal text. */
 :root {
-  --bg: #10130f;
-  --panel: #20251e;
-  --line: #535847;
-  --text: #eeeada;
-  --muted: #b8baa8;
-  --orange: #d9b778;
-  --green: #bbc898;
-  --red: #e69b82;
+  --bg: #111719;
+  --panel: #202827;
+  --line: #59645f;
+  --text: #e6ddbc;
+  --muted: #a8b09c;
+  --orange: #d69a58;
+  --green: #b1b87c;
+  --red: #d68c72;
 }
 body,
-#app:fullscreen {
-  background: #10130f;
-}
-.topbar {
-  background: #191e17 url("assets/ui/worn-metal.svg") center/384px;
-  border-color: #60614d;
-}
-.brand {
-  color: #e7dfc6;
-}
-.brand-mark {
-  background: url("assets/ui/insignia.svg") center/contain no-repeat;
-  font-size: 0;
-  clip-path: none;
-}
+#app:fullscreen { background: #111719; }
+.topbar { background: #1c2527; border-color: #59645f; }
+.brand { color: #e6ddbc; }
+.brand-mark { background: url("assets/ui/insignia.svg?v=10") center/contain no-repeat; font-size: 0; clip-path: none; image-rendering: pixelated; }
 .nav-btn,
-.icon-btn {
-  color: #d7d8c7;
-}
-.tiny-badge {
-  background: #373c2c;
-  color: #ddd2ad;
-}
-.combat-hud {
-  background: #20261e url("assets/ui/ballistic-nylon.svg");
-  border-color: #6a7057;
-}
+.icon-btn { color: #c4c9ad; }
+.tiny-badge { background: #303a2d; color: #e6ddbc; }
+.combat-hud { background: #202827; border-color: #64724b; }
 .phase-banner b,
-.mission-panel h2 {
-  color: #e2e7cd;
-}
-.deck-zone {
-  background: linear-gradient(100deg, #151a16a8, #1d2118a1), url("assets/ui/worn-metal.svg") center/384px;
-  border-color: #7d7d5f;
-  box-shadow: 0 -3px 0 #080c09cc, inset 0 1px #d8d0ae19;
-}
+.mission-panel h2 { color: #e6ddbc; }
+.deck-zone { background: #1c2527; border-color: #798479; box-shadow: 0 -3px 0 #111719; }
 #player-status,
 .enemy-caption,
-.inventory-modal {
-  background-image: linear-gradient(130deg, #283025e8, #131a15f7), url("assets/ui/ballistic-nylon.svg");
-  border-color: #747f61;
-  box-shadow: 2px 3px 0 #080d09cc, inset 0 1px #d6d1ad16;
-}
-#player-status {
-  background-image: url("assets/ui/hud-corners.svg"), linear-gradient(135deg, #283025ee, #131a15f7), url("assets/ui/ballistic-nylon.svg");
-  background-size: 100% 100%, auto, 64px;
-  background-repeat: no-repeat, repeat, repeat;
-}
+.inventory-modal { background: #202827; border-color: #798479; box-shadow: 2px 3px 0 #111719; }
+#player-status { background-image: url("assets/ui/hud-corners.svg?v=10"); background-size: 100% 100%; background-repeat: no-repeat; }
 .enemy-name,
-.enemy-hp-value {
-  color: #f0e8ce;
-}
+.enemy-hp-value { color: #e6ddbc; }
 .enemy-hp,
-#player-status .health-track {
-  background: #080d09;
-  border-color: #647252;
-}
+#player-status .health-track { background: #111719; border-color: #59645f; }
 .enemy-hp i,
-.health-track > div {
-  background: linear-gradient(#c1cb96, #889d60);
-}
-.enemy-hp .hp-loss {
-  background: repeating-linear-gradient(120deg, #edbb7e 0 3px, #a46b44 3px 6px);
-}
-.targeted .enemy-caption {
-  border-color: #d7bd7e;
-}
-.enemy-action {
-  border-color: #939e713d;
-}
+.health-track > div { background: #b1b87c; }
+.enemy-hp .hp-loss { background: #d69a58; }
+.targeted .enemy-caption { border-color: #efd18b; }
+.enemy-action { border-color: #59645f; }
 .action-countdown b,
-.action-content b {
-  color: #eed49d;
-}
+.action-content b { color: #efd18b; }
 .enemy-preview,
 .drop-effect-preview,
 .drag-status,
 #campaign-toast,
-.combat-hud .scene-message {
-  background: #242e20f5;
-  border-color: #beab77;
-  color: #f2e4bb;
-}
+.combat-hud .scene-message { background: #303a2d; border-color: #b29a70; color: #e6ddbc; box-shadow: 2px 3px 0 #111719; }
 .drag-preview .enemy-caption,
 #player-status.drop-hover,
-.bag-btn.drop-hover {
-  background-color: #3c442b;
-  background-image: linear-gradient(135deg, #465035ef, #262f1ef7);
-}
+.bag-btn.drop-hover { background: #46523b; background-image: none; }
 .inspect-details,
-.inspect-details[data-kind="card"][data-source="selection"] {
-  background: linear-gradient(140deg, #2e3528f7, #161e17fc), url("assets/ui/worn-metal.svg");
-  border-color: #b0a57e;
-  color: #eee7d1;
-}
+.inspect-details[data-kind="card"][data-source="selection"] { background: #202827; border-color: #b29a70; color: #e6ddbc; box-shadow: 3px 4px 0 #111719; }
 .inspect-details [data-inspect-desc],
-.inspect-details[data-kind="card"][data-source="selection"] [data-inspect-desc] {
-  color: #e3e0cd;
-}
+.inspect-details[data-kind="card"][data-source="selection"] [data-inspect-desc] { color: #e6ddbc; }
 .inspect-details [data-inspect-desc] .detail-value,
-.inspect-details .detail-value {
-  color: #9dc5ed;
-}
+.inspect-details .detail-value { color: #a6c7e3; }
 .inspect-details [data-inspect-desc] .detail-bonus,
-.inspect-details .detail-bonus {
-  color: #f0b171;
-}
+.inspect-details .detail-bonus,
+.inspect-details .added-value,
+.inspect-details [data-inspect-desc] .added-value { color: #efb375; }
 .modal,
 .settings-card,
-.forge-preview {
-  background: linear-gradient(140deg, #2a3228f5, #151e18fc), url("assets/ui/worn-metal.svg");
-  border-color: #9c9f7c;
-  box-shadow: 0 20px 80px #0009, inset 0 1px #ded5ad22;
-}
-.modal-backdrop {
-  background: #060b08d9;
-}
+.forge-preview { background: #202827; border-color: #798479; box-shadow: 4px 6px 0 #111719; }
+.modal-backdrop { background: #111719cc; backdrop-filter: none; }
 .modal h2,
-.inspect-details h3 {
-  color: #eaddb9;
-}
+.inspect-details h3 { color: #e6ddbc; }
 .modal-copy,
 .reward-note,
-.loadout-note {
-  color: #cbd1bf;
-}
-/* Field cards retain light paper and high-contrast blue effects. */
+.loadout-note { color: #c4c9ad; }
+/* Paper is quiet and flat so effect values keep their full contrast. */
 .card[data-rarity],
 .hand .card[data-rarity],
-.drag-ghost .card[data-rarity] {
-  background: #d4cdb5 url("assets/ui/field-paper.svg") center/256px;
-  color: #282e23;
-}
-.card[data-rarity]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background: var(--asset-frame) center/100% 100% no-repeat;
-  pointer-events: none;
-}
-.card[data-rarity="normal"] { --asset-frame: url("assets/ui/frame-normal.svg"); }
-.card[data-rarity="rare"] { --asset-frame: url("assets/ui/frame-rare.svg"); }
-.card[data-rarity="epic"] { --asset-frame: url("assets/ui/frame-epic.svg"); }
-.card[data-rarity="unique"] { --asset-frame: url("assets/ui/frame-unique.svg"); }
-.card[data-rarity="legendary"] { --asset-frame: url("assets/ui/frame-legendary.svg"); }
-.card[data-rarity="mystic"] { --asset-frame: url("assets/ui/frame-mystic.svg"); }
-.hand .card[data-rarity].selected {
-  background-image: linear-gradient(#eee0b85c, #ead19b45), url("assets/ui/field-paper.svg");
-}
-.card[data-rarity] .card-name {
-  color: #252c22;
-}
-.card[data-rarity] .card-cost b {
-  color: #323b29;
-}
+.drag-ghost .card[data-rarity] { background: #d2cbb2 url("assets/ui/field-paper.svg?v=10") center/96px; color: #2b3536; box-shadow: 3px 4px 0 #433e32; }
+.card[data-rarity] { --rarity-dark: #46514d; --rarity-mid: #8d9b8e; --rarity-light: #d5dbc4; }
+.card[data-rarity="normal"] { --asset-frame: url("assets/ui/frame-normal.svg?v=10"); }
+.card[data-rarity="rare"] { --asset-frame: url("assets/ui/frame-rare.svg?v=10"); --rarity-dark: #254c34; --rarity-mid: #4a9a5a; --rarity-light: #bdd59c; }
+.card[data-rarity="epic"] { --asset-frame: url("assets/ui/frame-epic.svg?v=10"); --rarity-dark: #29446c; --rarity-mid: #5285bf; --rarity-light: #becfe1; }
+.card[data-rarity="unique"] { --asset-frame: url("assets/ui/frame-unique.svg?v=10"); --rarity-dark: #4f3467; --rarity-mid: #9770b5; --rarity-light: #d8b9e1; }
+.card[data-rarity="legendary"] { --asset-frame: url("assets/ui/frame-legendary.svg?v=10"); --rarity-dark: #6d542b; --rarity-mid: #c7a24c; --rarity-light: #eddaa0; }
+.card[data-rarity="mystic"] { --asset-frame: url("assets/ui/frame-mystic.svg?v=10"); --rarity-dark: #6d3032; --rarity-mid: #bd5953; --rarity-light: #e6b59d; }
+.card[data-rarity]::before { content: ""; position: absolute; inset: 0; z-index: 3; background: var(--asset-frame) center/100% 100% no-repeat; pointer-events: none; image-rendering: pixelated; }
+.card[data-rarity]::after { background-image: linear-gradient(135deg, var(--rarity-light) 0% 24%, var(--rarity-mid) 24% 64%, var(--rarity-dark) 64% 100%); border-radius: 0; }
+.hand .card { transform: none; }
+.hand .card[data-rarity].selected,
+.hand .card[data-rarity]:hover:not(:disabled) { background: #e6ddbc url("assets/ui/field-paper.svg?v=10") center/96px; box-shadow: 0 0 0 1px var(--rarity-mid), 3px 5px 0 var(--rarity-dark); }
+.card[data-rarity] .card-name { color: #252d28; }
+.card[data-rarity] .card-cost { background: #e6ddbc; border-color: #8b7655; }
+.card[data-rarity] .card-cost b { color: #303a2d; }
 .card[data-rarity] .card-brief,
-.card[data-rarity] .effect-value {
-  color: #174d83;
-  font-weight: 800;
-}
-.card[data-rarity] .card-risk {
-  color: #8d422c;
-}
-.card[data-rarity] .card-type {
-  background: #f0e8d2e6;
-}
-.card-grip {
-  color: #6d694f;
-  border-color: #80765655;
-  background: #e6dcc233;
-}
-.card-art {
-  overflow: hidden;
-  border-radius: 2px;
-}
-.card-art:before {
-  display: none;
-}
-.card-art img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  border-radius: inherit;
-  filter: saturate(.78) contrast(1.04);
-  pointer-events: none;
-  -webkit-user-drag: none;
-}
-/* Raster inventory illustrations are contained within the existing icon space. */
-.asset-icon {
-  display: inline-block;
-  width: 44px;
-  height: 32px;
-  flex-shrink: 0;
-  object-fit: contain;
-  object-position: center;
-  vertical-align: middle;
-  pointer-events: none;
-  -webkit-user-drag: none;
-}
-.inventory-tile .asset-icon {
-  align-self: center;
-  width: calc(100% - 6px);
-  height: 34px;
-}
-.equipment-art {
-  max-width: 100%;
-  height: 40px;
-  object-fit: contain;
-  pointer-events: none;
-}
+.card[data-rarity] .effect-value { color: #174d83; font-weight: 800; }
+.card[data-rarity] .card-risk { color: #8d422c; }
+.card[data-rarity] .card-type { background: #e6ddbc; }
+.card-grip { color: #635744; border-color: #8b7655; background: #d2cbb2; }
+.card-art { overflow: hidden; border-radius: 0; }
+.card-art:before { display: none; }
+.card-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; border-radius: 0; filter: none; pointer-events: none; -webkit-user-drag: none; image-rendering: pixelated; }
+.asset-icon { display: inline-block; width: 32px; height: 32px; flex-shrink: 0; object-fit: contain; object-position: center; vertical-align: middle; pointer-events: none; -webkit-user-drag: none; image-rendering: pixelated; }
+.inventory-tile .asset-icon { align-self: center; width: 32px; height: 32px; }
+.equipment-art { max-width: 100%; height: 40px; object-fit: contain; pointer-events: none; }
 .bag-btn,
 .reroll-btn,
 .end-turn-btn,
@@ -231,267 +100,118 @@ body,
 #screen-root button,
 .maintenance-controls button,
 .field-offers button,
-.field-sales button {
-  background: linear-gradient(#3c4534e8, #242e22ed), url("assets/ui/ballistic-nylon.svg");
-  border-color: #7b8160;
-  color: #e4e4cc;
-  box-shadow: inset 0 1px #d5d0a61c;
-}
+.field-sales button { background: #303a2d; border-color: #798479; color: #e6ddbc; box-shadow: inset 0 2px #59645f, inset 0 -2px #1c2527; }
 #screen-root button:hover:not(:disabled),
 .end-turn-btn:hover:not(:disabled),
 .bag-btn:hover,
-.reroll-btn:hover:not(:disabled) {
-  background: #4c573b;
-  border-color: #c5b582;
-}
+.reroll-btn:hover:not(:disabled) { background: #46523b; border-color: #b1b87c; }
 .fire-action,
 .primary-btn,
-.menu-buttons .primary-btn {
-  background: linear-gradient(#d0bc8b, #ad9566);
-  color: #20271b;
-  border-color: #e2cf9c;
-  box-shadow: 0 3px 0 #655435, inset 0 1px #f5e9c666;
-}
-.fire-action:disabled {
-  background: #303a2b;
-  color: #bdc4ab;
-  border-color: #646f52;
-}
-.end-turn-btn:disabled {
-  background: #252c21;
-  border-color: #4b563e;
-  color: #98a586;
-}
-.menu-scene {
-  background-image: linear-gradient(90deg, #0b100ef2, #101710b5 38%, #11180e29 78%), url("assets/generated/menu.webp");
-  background-position: center;
-  background-size: cover;
-  background-attachment: scroll;
-}
-.base-scene {
-  background-image: linear-gradient(90deg, #101710e8, #121a13cc 58%, #151d12ad), url("assets/generated/base.webp");
-  background-position: center;
-  background-size: cover;
-  background-attachment: scroll;
-}
-.settings-scene:before {
-  background-image: linear-gradient(#10180fbf, #10180fe6), url("assets/generated/menu.webp");
-}
-.menu-content h1 {
-  color: #e5dfc8;
-  text-shadow: 2px 4px 0 #080c08, 0 10px 40px #0008;
-}
+.menu-buttons .primary-btn { background: #b29a70; color: #1c2527; border-color: #e6ddbc; box-shadow: inset 0 2px #efd18b, 0 3px 0 #635744; }
+.fire-action:disabled { background: #303a2d; color: #a8b09c; border-color: #59645f; box-shadow: none; }
+.end-turn-btn:disabled { background: #1c2527; border-color: #414c4b; color: #798479; box-shadow: none; }
+.menu-scene { background-image: linear-gradient(90deg, #111719dd 0% 42%, #11171977 42% 72%, #11171922 72% 100%), url("assets/pixel/menu.png?v=10"); background-position: center; background-size: cover; background-attachment: scroll; image-rendering: pixelated; }
+.base-scene { background-image: linear-gradient(#111719cc 0% 100%), url("assets/pixel/base.png?v=10"); background-position: center; background-size: cover; background-attachment: scroll; image-rendering: pixelated; }
+.settings-scene:before { background-image: linear-gradient(#111719cc 0% 100%), url("assets/pixel/menu.png?v=10"); filter: none; image-rendering: pixelated; }
+.menu-content h1 { color: #e6ddbc; text-shadow: 3px 4px 0 #111719; }
 .menu-content h1 small,
-#screen-root small {
-  color: #babea7;
-}
-#screen-root {
-  background: #111810;
-}
-#screen-root p {
-  color: #c7cdb9;
-}
-.menu-buttons button {
-  background: linear-gradient(90deg, #222c20ed, #293123ab) !important;
-  border-color: #7b8060 !important;
-  color: #ece6cf !important;
-  box-shadow: inset 3px 0 #a09d704d !important;
-}
-.menu-buttons .primary-btn {
-  background: linear-gradient(90deg, #cabb8b, #a38f62) !important;
-  color: #1d271a !important;
-  border-color: #ded1a5 !important;
-  box-shadow: inset 3px 0 #f3e8c0 !important;
-}
+#screen-root small { color: #b1b89f; }
+#screen-root { background: #111719; }
+#screen-root p { color: #c4c9ad; }
+.menu-buttons button { background: #202827 !important; border-color: #798479 !important; color: #e6ddbc !important; box-shadow: inset 3px 0 #64724b !important; }
+.menu-buttons .primary-btn { background: #b29a70 !important; color: #1c2527 !important; border-color: #e6ddbc !important; box-shadow: inset 3px 0 #efd18b !important; }
 .base-heading,
-.base-tabs {
-  border-color: #7f8566;
-}
-.base-tabs .active {
-  background: #566043 !important;
-  border-color: #c9bd8c !important;
-}
+.base-tabs { border-color: #59645f; }
+.base-tabs .active { background: #46523b !important; border-color: #b1b87c !important; }
 .storage-panel,
 .quest,
 .upgrade-cards article,
 .shop-offers article,
-.facility-build {
-  background: linear-gradient(#1e291eef, #142016ed), url("assets/ui/ballistic-nylon.svg");
-  border-color: #697658;
-  box-shadow: inset 0 1px #c9c5a112;
-}
-#screen-root .inventory-tile {
-  background: linear-gradient(140deg, #37412fec, #1e2b21ef), url("assets/ui/ballistic-nylon.svg");
-  box-shadow: inset 0 1px #dbd5aa1a, 0 2px 0 #08110880;
-}
-.inventory-tile[data-rank="normal"] {
-  border-color: #9ca38c !important;
-}
-.inventory-tile.chosen {
-  background: #525c3b !important;
-}
-.empty-slot {
-  background: url("assets/ui/slot-corners.svg") center/100% 100% no-repeat, #0a130f55;
-  border: 1px solid #56604566;
-}
+.facility-build { background: #202827; border-color: #59645f; box-shadow: inset 0 2px #2b3536; }
+#screen-root .inventory-tile { background: #303a2d; box-shadow: inset 0 2px #46523b, 0 2px 0 #111719; }
+.inventory-tile[data-rank="normal"] { border-color: #8d9b8e !important; }
+.inventory-tile.chosen { background: #46523b !important; }
+.empty-slot { background: url("assets/ui/slot-corners.svg?v=10") center/100% 100% no-repeat, #18211f; border: 1px solid #303a2d; image-rendering: pixelated; }
 .selection-detail,
 .loot-entry,
 .reward-options button,
-.maintenance-cards button {
-  background: #273622ed;
-  border-color: #7a895e;
-  color: #e9e4c9;
-}
-.selection-detail {
-  border-left-color: #c7b886;
-}
-.map-options button {
-  background: linear-gradient(125deg, #3c4b32, #293923);
-  border-color: #9b9d73;
-}
+.maintenance-cards button { background: #303a2d; border-color: #64724b; color: #e6ddbc; }
+.selection-detail { border-left-color: #b29a70; }
+.map-options button,
+.route-card,
+.route-card.supply { background: #303a2d; border-color: #798479; }
 .played-cards span:not(:empty),
-#hazard-indicator {
-  background: #1a2519e8;
-  border-color: #899772;
-}
-@media (max-width: 800px) {
-  .menu-scene {
-    background-position: 62% center;
-  }
-  .inventory-tile .asset-icon {
-    height: 28px;
-  }
-  .asset-icon {
-    width: 36px;
-    height: 28px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .asset-icon,
-  .card-art img {
-    transition: none;
-  }
-}
-/* Shared art wrapper: a vector fallback remains usable if an illustration cannot load. */
-.asset-visual {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 32px;
-  flex: 0 0 auto;
-  vertical-align: middle;
-  pointer-events: none;
-  overflow: hidden;
-}
-.asset-visual .asset-icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-.asset-visual .asset-fallback {
-  display: none;
-  width: 70%;
-  height: 70%;
-  color: #c5c2a1;
-}
-.asset-visual.asset-missing .asset-icon {
-  display: none;
-}
-.asset-visual.asset-missing .asset-fallback {
-  display: block;
-}
-.asset-visual .asset-fallback.only-fallback {
-  display: block;
-}
-.card-art .card-illustration {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.card-art .card-illustration .asset-icon {
-  object-fit: cover;
-}
-.card-art .asset-fallback {
-  color: #655f40;
-}
-.inventory-tile > .asset-visual {
-  align-self: center;
-  width: 100%;
-  height: 34px;
-}
-.asset-visual.equipment-art {
-  width: 100%;
-  height: 40px;
-  max-width: 120px;
-  align-self: flex-start;
-}
-.shop-offers article > .asset-visual {
-  width: 58px;
-  height: 44px;
-}
-.shop-offers article > div {
-  flex: 1;
-  min-width: 0;
-}
-.asset-visual.compact-art {
-  width: 32px;
-  height: 28px;
-  float: left;
-  margin-right: 7px;
-}
-.loot-entry > .asset-visual.compact-art {
-  grid-row: 1 / 3;
-  align-self: center;
-}
-.loot-entry:has(> .asset-visual) {
-  grid-template-columns: 32px minmax(0,1fr) auto;
-}
+#hazard-indicator { background: #202827; border-color: #64724b; }
+/* Shared decorative image wrapper, including an angular SVG failure fallback. */
+.asset-visual { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 32px; flex: 0 0 auto; vertical-align: middle; pointer-events: none; overflow: hidden; }
+.asset-visual .asset-icon { display: block; width: 100%; height: 100%; object-fit: contain; }
+.asset-visual .asset-fallback { display: none; width: 70%; height: 70%; color: #c4c9ad; shape-rendering: crispEdges; }
+.asset-visual.asset-missing .asset-icon { display: none; }
+.asset-visual.asset-missing .asset-fallback,
+.asset-visual .asset-fallback.only-fallback { display: block; }
+.card-art .card-illustration { position: absolute; inset: 0; width: 100%; height: 100%; }
+.card-art .card-illustration .asset-icon { object-fit: cover; }
+.card-art .asset-fallback { color: #635744; }
+.inventory-tile > .asset-visual { align-self: center; width: 100%; height: 34px; }
+.inventory-tile > .asset-visual .asset-icon { width: 32px; height: 32px; }
+.asset-visual.equipment-art { width: 100%; height: 40px; max-width: 120px; align-self: flex-start; }
+.asset-visual.equipment-art .asset-icon { width: 32px; height: 32px; }
+.shop-offers article > .asset-visual { width: 58px; height: 44px; }
+.shop-offers article > div { flex: 1; min-width: 0; }
+.asset-visual.compact-art { width: 32px; height: 28px; float: left; margin-right: 7px; }
+.loot-entry > .asset-visual.compact-art { grid-row: 1 / 3; align-self: center; }
+.loot-entry:has(> .asset-visual) { grid-template-columns: 32px minmax(0,1fr) auto; }
 .loot-entry:has(> .asset-visual) > strong,
-.loot-entry:has(> .asset-visual) > small {
-  grid-column: 2;
-}
-.loot-entry:has(> .asset-visual) > span:not(.asset-visual) {
-  grid-column: 3;
-}
-.chest-button .asset-visual.chest-art {
-  display: flex;
-  width: 150px;
-  height: 115px;
-  margin-inline: auto;
-}
-.operator-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.bag-btn .asset-visual.bag-illustration {
-  width: 36px;
-  height: 32px;
-}
-#world {
-  image-rendering: auto;
-}
-.chest-scene {
-  background-image: linear-gradient(#14201bc4, #111b15ef), url("assets/generated/base.webp");
-}
-.inspect-details .added-value,
-.inspect-details [data-inspect-desc] .added-value {
-  color: #f0b171;
-}
+.loot-entry:has(> .asset-visual) > small { grid-column: 2; }
+.loot-entry:has(> .asset-visual) > span:not(.asset-visual) { grid-column: 3; }
+.chest-button .asset-visual.chest-art { display: flex; width: 144px; height: 108px; margin-inline: auto; }
+.operator-avatar img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+.bag-btn .asset-visual.bag-illustration { width: 32px; height: 32px; }
+#world { image-rendering: pixelated; }
+.chest-scene { background-image: linear-gradient(#111719cc 0% 100%), url("assets/pixel/base.png?v=10"); image-rendering: pixelated; }
+.scene-grain { display: none; }
+.viewport .scene-message { position: absolute; top: auto; bottom: 8px; left: 50%; width: max-content; max-width: calc(100% - 16px); margin: 0; padding: 6px 10px; transform: translateX(-50%); background: #303a2d; border: 1px solid #8b7655; border-radius: 0; color: #e6ddbc; box-shadow: 2px 2px #111719; font-size: 12px; line-height: 1.3; text-align: center; white-space: normal; opacity: 0; pointer-events: none; z-index: 6; }
+.viewport .scene-message.visible { opacity: 1; transform: translateX(-50%); }
+.drag-ghost { filter: none; }
+.hand .card.unavailable,
+.reroll-btn:disabled,
+.collection-grid .card.locked { filter: none; }
+.card,
+.card::before,
+.card::after,
+.card-cost,
+.card-type,
+.card-grip,
+.card-art,
+.enemy-caption,
+.enemy-preview,
+.enemy-intent,
+.intent-pill,
+#player-status,
+.modal,
+.inspect-details,
+.inventory-modal,
+.drag-status,
+.drop-effect-preview,
+#campaign-toast,
+.settings-card,
+.storage-panel,
+.empty-slot,
+.chest-button,
+.fire-action,
+.end-turn-btn,
+.bag-btn,
+.reroll-btn,
+.route-card,
+.action-preview,
+#screen-root button { border-radius: 0; }
+.asset-icon,
+.card-art img { transition: none; }
 @media (max-width: 800px) {
-  .inventory-tile > .asset-visual {
-    height: 28px;
-  }
-  .shop-offers article > .asset-visual {
-    width: 40px;
-    height: 32px;
-  }
-  .chest-button .asset-visual.chest-art {
-    width: 95px;
-    height: 70px;
-  }
+  .menu-scene { background-position: 62% center; }
+  .shop-offers article > .asset-visual { width: 40px; height: 32px; }
+  .chest-button .asset-visual.chest-art { width: 96px; height: 72px; }
+}
+@media (orientation: landscape) and (max-height: 360px) {
+  .viewport .scene-message { font-size: 11px; padding: 4px 6px; bottom: 5px; }
 }

@@ -1,21 +1,25 @@
-# Field-kit UI asset pack
+# Cardkov pixel field-kit UI
 
-Original vector artwork for Escape from Cardkov. These files are created for this project; they contain no extracted game artwork, fonts, logos, or proprietary texture files.
+Original angular UI artwork for Escape from Cardkov. The world is designed around 48×72-pixel actors, 32×32 inventory objects and 96×64 card illustrations. UI text remains normal, sharp HTML Korean and numbers.
+
+All SVGs use integer geometry and `shape-rendering="crispEdges"`. Surfaces are quiet flat colors with a few large wear marks. Frames use exactly three metal tones—shadow, base and highlight—with no gradients, blur, grain or procedural noise. Existing rarity names and colors remain normal grey, rare green, epic blue, unique purple, legendary yellow and mystic red.
 
 | Asset | Purpose |
 | --- | --- |
-| `insignia.svg`, `favicon.svg` | Cut-metal crossed-card field insignia and browser icon |
-| `worn-metal.svg` | 384px repeatable charcoal/olive painted steel; deterministic scratches |
-| `field-paper.svg` | 256px repeatable aged card stock; quiet surface for readable blue effects |
-| `ballistic-nylon.svg` | 64px repeatable woven military fabric |
-| `hud-corners.svg` | Scalable 240×160 transparent metal mounting corners and rivets |
-| `slot-corners.svg` | Scalable empty inventory slot guide |
-| `reticle.svg` | Transparent 128px target guide |
-| `frame-{normal,rare,epic,unique,legendary,mystic}.svg` | Transparent 160×224 metal rim/corner overlays; six rarity colors |
-| `field-icons.svg` | External SVG symbol sprite: health, armor, energy, shield, stress, vulnerable, seal, curse, unstable, erosion, pierce, shatter, delay, currency, backpack, warehouse, forge, reroll, draw, extract |
+| `insignia.svg`, `favicon.svg` | 32×32 angular crossed-card field insignia |
+| `worn-metal.svg` | 96×96 quiet charcoal steel repeat |
+| `field-paper.svg` | 96×96 light card stock repeat; readable blue effect text |
+| `ballistic-nylon.svg` | 64×64 flat military fabric bands |
+| `hud-corners.svg` | Scalable 240×160 transparent mounting corners |
+| `slot-corners.svg` | 64×64 angular storage slot guide |
+| `reticle.svg` | 64×64 target corners and cross |
+| `frame-{normal,rare,epic,unique,legendary,mystic}.svg` | 160×224 three-tone angular card hardware |
+| `field-icons.svg` | 20 external 24×24 symbols with integer paths and square ends |
 
-Load `asset-theme.css` after the existing stylesheets. It keeps their responsive layout and overlays the field-kit palette, textures and art. The existing CSS metallic gradient rim remains in place; vector frame corners provide small scratches and hardware details.
+Load `asset-theme.css` last. It preserves the existing responsive layout, hidden-art rules and touch targets, replaces continuous gloss with three hard color bands, and displays raster illustrations with nearest-neighbor scaling. Effect text is bold blue; added tooltip values stay orange. Card image names and ownership are managed separately by the main art catalog.
 
-For external icons use `<svg aria-hidden="true"><use href="assets/ui/field-icons.svg#health"/></svg>` and provide the accessible name on the enclosing control. Illustrations inside card faces and inventory tiles are decorative; their neighboring title and effect text provide the information.
+External icon example: `<svg aria-hidden="true"><use href="assets/ui/field-icons.svg#health"/></svg>`. Give the accessible name on the enclosing control. Decorative art never takes pointer or drag events.
 
-Raster art paths expected by the theme: `assets/generated/menu.webp`, `assets/generated/base.webp`. Card art uses `.card-art img`; inventory uses `img.asset-icon`; equipment can use `img.equipment-art`. No runtime download, external library, or GPU texture shader is required.
+Symbols: health, armor, energy, shield, stress, vulnerable, seal, curse, unstable, erosion, pierce, shatter, delay, currency, backpack, warehouse, forge, reroll, draw, extract.
+
+The theme expects `assets/pixel/menu.png` and `assets/pixel/base.png`. Other images use `.card-art img`, `img.asset-icon`, `.equipment-art` and `.operator-avatar img`. No runtime library or generated-image API is required.

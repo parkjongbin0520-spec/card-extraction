@@ -1,220 +1,350 @@
 {
-  "version": 9,
-  "provenance": "Original images generated with imagegen; custom SVG UI authored for Cardkov. WebP derivatives encoded with ImageMagick.",
+  "version": 10,
+  "style": "simplified-military-pixel",
+  "provenance": "New pixel artwork generated with imagegen, exported at native pixel resolution with a common24-color palette. Existing photographic artwork is not used as input.",
+  "palette": [
+    "#111719",
+    "#1c2527",
+    "#2b3536",
+    "#414c4b",
+    "#59645f",
+    "#798479",
+    "#9da899",
+    "#c4c9ad",
+    "#e6ddbc",
+    "#303a2d",
+    "#46523b",
+    "#64724b",
+    "#899763",
+    "#b1b87c",
+    "#433e32",
+    "#635744",
+    "#8b7655",
+    "#b29a70",
+    "#4b3431",
+    "#785047",
+    "#a66b50",
+    "#d69a58",
+    "#efd18b",
+    "#63848b"
+  ],
+  "units": {
+    "actor": [
+      48,
+      72
+    ],
+    "foot": 69,
+    "item": [
+      32,
+      32
+    ],
+    "card": [
+      96,
+      64
+    ],
+    "background": [
+      480,
+      270
+    ],
+    "weapon": [
+      160,
+      125
+    ],
+    "portrait": [
+      32,
+      32
+    ]
+  },
   "files": [
     {
-      "path": "assets/generated/actors/armored.webp",
-      "bytes": 26212
+      "path": "assets/pixel/actors/armored.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1734
     },
     {
-      "path": "assets/generated/actors/drone.webp",
-      "bytes": 16124
+      "path": "assets/pixel/actors/drone.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1176
     },
     {
-      "path": "assets/generated/actors/soldier.webp",
-      "bytes": 24286
+      "path": "assets/pixel/actors/soldier.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1550
     },
     {
-      "path": "assets/generated/base.webp",
-      "bytes": 257400
+      "path": "assets/pixel/base.png",
+      "width": 480,
+      "height": 270,
+      "bytes": 25363
     },
     {
-      "path": "assets/generated/cards/breach.webp",
-      "bytes": 41772
+      "path": "assets/pixel/cards/breach.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1132
     },
     {
-      "path": "assets/generated/cards/bulwark.webp",
-      "bytes": 35388
+      "path": "assets/pixel/cards/bulwark.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 2428
     },
     {
-      "path": "assets/generated/cards/burst.webp",
-      "bytes": 14778
+      "path": "assets/pixel/cards/burst.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 2831
     },
     {
-      "path": "assets/generated/cards/fieldAid.webp",
-      "bytes": 39040
+      "path": "assets/pixel/cards/fieldAid.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1622
     },
     {
-      "path": "assets/generated/cards/grenade.webp",
-      "bytes": 21804
+      "path": "assets/pixel/cards/grenade.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1880
     },
     {
-      "path": "assets/generated/cards/guard.webp",
-      "bytes": 42646
+      "path": "assets/pixel/cards/guard.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1665
     },
     {
-      "path": "assets/generated/cards/heal.webp",
-      "bytes": 33360
+      "path": "assets/pixel/cards/heal.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 3111
     },
     {
-      "path": "assets/generated/cards/pierce.webp",
-      "bytes": 19408
+      "path": "assets/pixel/cards/pierce.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1214
     },
     {
-      "path": "assets/generated/cards/scan.webp",
-      "bytes": 22174
+      "path": "assets/pixel/cards/scan.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1429
     },
     {
-      "path": "assets/generated/cards/shot.webp",
-      "bytes": 15450
+      "path": "assets/pixel/cards/shot.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1640
     },
     {
-      "path": "assets/generated/cards/suppress.webp",
-      "bytes": 31610
+      "path": "assets/pixel/cards/suppress.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 2902
     },
     {
-      "path": "assets/generated/cards/surge.webp",
-      "bytes": 24418
+      "path": "assets/pixel/cards/surge.png",
+      "width": 96,
+      "height": 64,
+      "bytes": 1860
     },
     {
-      "path": "assets/generated/environment-0.webp",
-      "bytes": 354266
+      "path": "assets/pixel/environment-0.png",
+      "width": 480,
+      "height": 270,
+      "bytes": 16857
     },
     {
-      "path": "assets/generated/environment-1.webp",
-      "bytes": 343074
+      "path": "assets/pixel/environment-1.png",
+      "width": 480,
+      "height": 270,
+      "bytes": 23039
     },
     {
-      "path": "assets/generated/environment-2.webp",
-      "bytes": 292732
+      "path": "assets/pixel/environment-2.png",
+      "width": 480,
+      "height": 270,
+      "bytes": 24023
     },
     {
-      "path": "assets/generated/field-plates.webp",
-      "bytes": 117152
+      "path": "assets/pixel/field-plates.png",
+      "width": 288,
+      "height": 72,
+      "bytes": 3160
     },
     {
-      "path": "assets/generated/items/backpack.webp",
-      "bytes": 17064
+      "path": "assets/pixel/items/backpack.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 815
     },
     {
-      "path": "assets/generated/items/carbine.webp",
-      "bytes": 14660
+      "path": "assets/pixel/items/carbine.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 563
     },
     {
-      "path": "assets/generated/items/cash.webp",
-      "bytes": 22024
+      "path": "assets/pixel/items/cash.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 1098
     },
     {
-      "path": "assets/generated/items/circuit.webp",
-      "bytes": 18290
+      "path": "assets/pixel/items/circuit.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 725
     },
     {
-      "path": "assets/generated/items/grenade.webp",
-      "bytes": 13352
+      "path": "assets/pixel/items/grenade.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 820
     },
     {
-      "path": "assets/generated/items/heavyVest.webp",
-      "bytes": 17876
+      "path": "assets/pixel/items/heavyVest.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 931
     },
     {
-      "path": "assets/generated/items/largePack.webp",
-      "bytes": 19386
+      "path": "assets/pixel/items/largePack.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 823
     },
     {
-      "path": "assets/generated/items/medkit.webp",
-      "bytes": 16598
+      "path": "assets/pixel/items/medkit.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 787
     },
     {
-      "path": "assets/generated/items/pistol.webp",
-      "bytes": 11814
+      "path": "assets/pixel/items/pistol.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 580
     },
     {
-      "path": "assets/generated/items/rifle.webp",
-      "bytes": 12664
+      "path": "assets/pixel/items/rifle.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 445
     },
     {
-      "path": "assets/generated/items/scrap.webp",
-      "bytes": 22110
+      "path": "assets/pixel/items/scrap.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 709
     },
     {
-      "path": "assets/generated/items/vest.webp",
-      "bytes": 18316
+      "path": "assets/pixel/items/vest.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 765
     },
     {
-      "path": "assets/generated/menu.webp",
-      "bytes": 240504
+      "path": "assets/pixel/menu.png",
+      "width": 480,
+      "height": 270,
+      "bytes": 26345
     },
     {
-      "path": "assets/generated/operator.webp",
-      "bytes": 4126
+      "path": "assets/pixel/operator.png",
+      "width": 32,
+      "height": 32,
+      "bytes": 837
     },
     {
-      "path": "assets/generated/props/column.webp",
-      "bytes": 19014
+      "path": "assets/pixel/props/column.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1137
     },
     {
-      "path": "assets/generated/props/crate.webp",
-      "bytes": 15610
+      "path": "assets/pixel/props/crate.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1260
     },
     {
-      "path": "assets/generated/props/terminal.webp",
-      "bytes": 20244
+      "path": "assets/pixel/props/terminal.png",
+      "width": 48,
+      "height": 72,
+      "bytes": 1456
     },
     {
-      "path": "assets/generated/weapon.webp",
-      "bytes": 67052
+      "path": "assets/pixel/weapon.png",
+      "width": 160,
+      "height": 125,
+      "bytes": 5319
     }
   ],
   "vectorFiles": [
     {
       "path": "assets/ui/ballistic-nylon.svg",
-      "bytes": 368
+      "bytes": 252
     },
     {
       "path": "assets/ui/favicon.svg",
-      "bytes": 736
+      "bytes": 469
     },
     {
       "path": "assets/ui/field-icons.svg",
-      "bytes": 4280
+      "bytes": 4410
     },
     {
       "path": "assets/ui/field-paper.svg",
-      "bytes": 743
+      "bytes": 267
     },
     {
       "path": "assets/ui/frame-epic.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/frame-legendary.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/frame-mystic.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/frame-normal.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/frame-rare.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/frame-unique.svg",
-      "bytes": 1030
+      "bytes": 563
     },
     {
       "path": "assets/ui/hud-corners.svg",
-      "bytes": 659
+      "bytes": 373
     },
     {
       "path": "assets/ui/insignia.svg",
-      "bytes": 684
+      "bytes": 469
     },
     {
       "path": "assets/ui/reticle.svg",
-      "bytes": 355
+      "bytes": 247
     },
     {
       "path": "assets/ui/slot-corners.svg",
-      "bytes": 275
+      "bytes": 289
     },
     {
       "path": "assets/ui/worn-metal.svg",
-      "bytes": 4769
+      "bytes": 282
     }
   ]
 }
