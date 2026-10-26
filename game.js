@@ -3,8 +3,9 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+  const fieldIcons = { shield: "shield", bolt: "energy", plus: "health", cards: "draw", box: "warehouse", backpack: "backpack", reroll: "reroll", exit: "extract" };
   const icon = (name) =>
-    `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+    `<svg aria-hidden="true"><use href="${fieldIcons[name] ? "assets/ui/field-icons.svg#" + fieldIcons[name] : "#i-" + name}"/></svg>`;
   const CARDS = CardLibrary.templates,
     BASE_DECK = CardLibrary.baseDeck,
     Rules = CombatRules;
@@ -513,7 +514,7 @@
     const disabled = opts.disabled ? "disabled" : "";
     return `<button class="card ${c.type} ${state.selected === index && !opts.reward ? "selected" : ""} ${opts.extraClass || ""} ${opts.unavailable ? "unavailable" : ""}" data-options="${instanceFor(id)?.options?.length || 0}" data-rarity="${c.rarity}" data-card="${c.templateId}" data-instance="${id}" ${opts.reward ? 'data-reward="' + (opts.rewardId || id) + '"' : 'data-index="' + index + '"'} ${disabled} aria-label="${c.name}, ${rarityNames[c.rarity]}, 에너지 ${c.cost}, ${briefFor(c)}, ${riskBrief(c)}" ${!opts.reward ? 'aria-pressed="' + (state.selected === index) + '"' : ""}>
       <span class="card-top"><span class="card-cost"><small>비용</small><b>${c.cost}</b></span><span class="card-grip" title="잡아서 대상에게 끌기" aria-hidden="true">⠿</span><span class="card-type">${c.loan ? "대여" : rarityNames[c.rarity]}</span></span>
-      <span class="card-art">${icon(c.icon)}</span><span class="card-name">${c.name}</span><span class="card-brief">${summaryMarkup(c)}</span><span class="card-desc">${keywords(c.desc)}</span>
+      <span class="card-art">${GameArt.visual("card", c.templateId, c.icon, "card-illustration")}</span><span class="card-name">${c.name}</span><span class="card-brief">${summaryMarkup(c)}</span><span class="card-desc">${keywords(c.desc)}</span>
       ${riskBrief(c) ? `<span class="card-risk">${riskBrief(c)}</span>` : ""}<span class="card-bottom"><span>${opts.reward ? rarityNames[c.rarity] : index + 1}</span><span>${opts.bottom || `에너지 ${c.cost} 사용`}</span></span></button>`;
   }
 
@@ -1199,7 +1200,7 @@
   function showReward() {
     queuedReward = false;
     showModal(
-      `<div class="chest-scene"><div class="eyebrow">SECTOR ${state.zone + 1} / LOOT ROOM</div><h2 id="modal-title">구역 확보. <em>남겨진 보급품.</em></h2><button id="open-chest" class="chest-button">${icon("box")}<strong>상자 열기 · 정비 시작</strong><small>적 장비·물품 회수 / 정비 ${Campaign.tuning.maintenanceTurns}턴</small></button></div>`,
+      `<div class="chest-scene"><div class="eyebrow">SECTOR ${state.zone + 1} / LOOT ROOM</div><h2 id="modal-title">구역 확보. <em>남겨진 보급품.</em></h2><button id="open-chest" class="chest-button"><span class="asset-visual chest-art" aria-hidden="true"><img class="asset-icon" data-art-image src="assets/generated/props/crate.webp" alt="" draggable="false"><svg class="asset-fallback"><use href="#i-box"/></svg></span><strong>상자 열기 · 정비 시작</strong><small>적 장비·물품 회수 / 정비 ${Campaign.tuning.maintenanceTurns}턴</small></button></div>`,
       true,
       "reward",
     );
@@ -1217,6 +1218,13 @@
       : state.items[id]?.templateId === "cash"
         ? `${state.items[id].qty} CR`
         : Campaign.items[state.items[id]?.templateId]?.name || "물품";
+  const runArt = (id) =>
+    GameArt.visual(
+      state.cards[id] ? "card" : "item",
+      (state.cards[id] || state.items[id])?.templateId,
+      state.cards[id] ? "cards" : "box",
+      "compact-art",
+    );
   function showMaintenance(reset = true) {
     if (state.mode !== "maintenance") return;
     const expanded = !!$("modal")
@@ -1232,7 +1240,7 @@
       ids
         .map(
           (id) =>
-            `<button data-loot-id="${id}" data-side="${side}" class="loot-entry"><strong>${runName(id)}</strong><small>${state.cards[id] ? (state.cards[id].unstable ? "불안정 카드" : "안정 카드") : state.items[id]?.templateId === "cash" ? "휴대금" : Campaign.items[state.items[id]?.templateId]?.desc || ""}</small><span>${side === "loot" ? "← 회수" : "반환 →"}</span></button>`,
+            `<button data-loot-id="${id}" data-side="${side}" class="loot-entry">${runArt(id)}<strong>${runName(id)}</strong><small>${state.cards[id] ? (state.cards[id].unstable ? "불안정 카드" : "안정 카드") : state.items[id]?.templateId === "cash" ? "휴대금" : Campaign.items[state.items[id]?.templateId]?.desc || ""}</small><span>${side === "loot" ? "← 회수" : "반환 →"}</span></button>`,
         )
         .join("");
     showModal(
@@ -1243,7 +1251,7 @@
               .map((x) => `${statusNames[x.type]} ${x.turns}턴`)
               .join(" / ")
           : ""
-      }</div><div class="loot-columns"><section><h3>내 배낭</h3><div class="loot-list">${tiles(lootDraft.pack, "pack")}</div></section><section><h3>적 전리품·상자 <button id="loot-all">가능한 만큼 회수</button></h3><div class="loot-list">${tiles(lootDraft.loot, "loot")}</div>${state.rewardOptions.length ? `<h4>카드 1장 선택</h4><div class="reward-options">${state.rewardOptions.map((id) => `<button data-offer="${id}" class="${lootDraft.choice === id ? "chosen" : ""}">${cardFor(id).name}<small>${briefFor(cardFor(id))}</small></button>`).join("")}</div>` : ""}</section></div><div class="maintenance-controls"><button id="confirm-loot" class="primary-btn">이동 확정 · 1턴</button><button id="cancel-loot">이동 취소</button><button id="finish-maintenance">정비 종료 → 맵</button></div><details ${expanded ? "open" : ""}><summary>카드·아이템 사용 (각 1턴 · 카드 비용/리스크 적용)</summary><div class="maintenance-cards">${state.bag
+      }</div><div class="loot-columns"><section><h3>내 배낭</h3><div class="loot-list">${tiles(lootDraft.pack, "pack")}</div></section><section><h3>적 전리품·상자 <button id="loot-all">가능한 만큼 회수</button></h3><div class="loot-list">${tiles(lootDraft.loot, "loot")}</div>${state.rewardOptions.length ? `<h4>카드 1장 선택</h4><div class="reward-options">${state.rewardOptions.map((id) => `<button data-offer="${id}" class="${lootDraft.choice === id ? "chosen" : ""}">${runArt(id)}${cardFor(id).name}<small>${briefFor(cardFor(id))}</small></button>`).join("")}</div>` : ""}</section></div><div class="maintenance-controls"><button id="confirm-loot" class="primary-btn">이동 확정 · 1턴</button><button id="cancel-loot">이동 취소</button><button id="finish-maintenance">정비 종료 → 맵</button></div><details ${expanded ? "open" : ""}><summary>카드·아이템 사용 (각 1턴 · 카드 비용/리스크 적용)</summary><div class="maintenance-cards">${state.bag
         .map((id) => {
           const c = cardFor(id),
             allowed =
@@ -1251,7 +1259,7 @@
               (c.heal || c.block || c.energyGain) &&
               !state.maintenanceUsed.includes(id),
             p = Rules.preview({ ...battleState(), enemies: [] }, c);
-          return `<button data-maint-card="${id}" ${!allowed || !p.ok ? "disabled" : ""}>${c.name}<small>${briefFor(c)}${riskBrief(c) ? "<br>" + riskBrief(c) : ""}</small></button>`;
+          return `<button data-maint-card="${id}" ${!allowed || !p.ok ? "disabled" : ""}>${runArt(id)}${c.name}<small>${briefFor(c)}${riskBrief(c) ? "<br>" + riskBrief(c) : ""}</small></button>`;
         })
         .join("")}${state.packItems
         .filter((id) =>
@@ -1261,7 +1269,7 @@
         )
         .map(
           (id) =>
-            `<button data-maint-item="${id}">${runName(id)}<small>${Campaign.items[state.items[id].templateId].desc}</small></button>`,
+            `<button data-maint-item="${id}">${runArt(id)}${runName(id)}<small>${Campaign.items[state.items[id].templateId].desc}</small></button>`,
         )
         .join("")}${state.packItems
         .filter((id) =>
@@ -1274,7 +1282,7 @@
           return (kind === "weapon" ? ["primary", "secondary"] : [kind])
             .map(
               (slot) =>
-                `<button data-run-equip="${id}" data-slot="${slot}">${runName(id)}<small>${slot === "primary" ? "주무기 1" : slot === "secondary" ? "주무기 2" : kind === "armor" ? "방어구" : "배낭"}로 장착 · 1턴</small></button>`,
+                `<button data-run-equip="${id}" data-slot="${slot}">${runArt(id)}${runName(id)}<small>${slot === "primary" ? "주무기 1" : slot === "secondary" ? "주무기 2" : kind === "armor" ? "방어구" : "배낭"}로 장착 · 1턴</small></button>`,
             )
             .join("");
         })
@@ -1524,11 +1532,11 @@
           const d = key.startsWith("card:")
             ? CARDS[key.slice(5)]
             : Campaign.items[key];
-          return `<button data-field-buy="${key}">${d.name}<small>${d.desc}</small><b>${priceOf(key)} CR 구매</b></button>`;
+          return `<button data-field-buy="${key}">${GameArt.visual(key.startsWith("card:") ? "card" : "item", key.replace(/^card:/, ""), d.icon, "compact-art")}${d.name}<small>${d.desc}</small><b>${priceOf(key)} CR 구매</b></button>`;
         })
         .join(
           "",
-        )}</div><h3>소지품 판매</h3><div class="field-sales">${[...state.packItems, ...state.bag.filter((id) => !state.cards[id].loan)].map((id) => `<button data-field-sell="${id}">${runName(id)} · ${state.cards[id] ? 25 + CardLibrary.rarities.indexOf(state.cards[id].rarity) * 20 : Math.floor(Campaign.items[state.items[id].templateId].price * 0.4) * state.items[id].qty} CR 판매</button>`).join("")}</div><details><summary>상인 의뢰</summary>${Object.entries(
+        )}</div><h3>소지품 판매</h3><div class="field-sales">${[...state.packItems, ...state.bag.filter((id) => !state.cards[id].loan)].map((id) => `<button data-field-sell="${id}">${runArt(id)}${runName(id)} · ${state.cards[id] ? 25 + CardLibrary.rarities.indexOf(state.cards[id].rarity) * 20 : Math.floor(Campaign.items[state.items[id].templateId].price * 0.4) * state.items[id].qty} CR 판매</button>`).join("")}</div><details><summary>상인 의뢰</summary>${Object.entries(
         Campaign.quests,
       )
         .map(

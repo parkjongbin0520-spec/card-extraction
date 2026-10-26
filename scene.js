@@ -5,8 +5,10 @@
   class BattlefieldScene {
     constructor(canvas) {
       this.canvas=canvas;this.ctx=canvas.getContext('2d',{alpha:false});this.width=1;this.height=1;
-      this.hover=0;this.look=0;this.tiles=[];this.edges=[];this.shadows=[];this.plates=new Image();this.plates.onload=()=>this.preparePlates();this.plates.src='assets/field-plates.svg';
-      this.weapon=new Image();this.weapon.onload=()=>this.prepareWeapon();this.weapon.src='assets/weapon-plate.svg';
+      this.hover=0;this.look=0;this.tiles=[];this.edges=[];this.shadows=[];
+      this.plates=this.loadImage('assets/generated/field-plates.webp','assets/field-plates.svg',()=>this.preparePlates());
+      this.weapon=this.loadImage('assets/generated/weapon.webp','assets/weapon-plate.svg',()=>this.prepareWeapon());
+      this.environments=Array.from({length:3},(_,zone)=>this.loadImage(`assets/generated/environment-${zone}.webp`,null,()=>{this.roomKey='';}));
       this.reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
       this.texture=document.createElement('canvas');this.texture.width=this.texture.height=128;
       const p=this.texture.getContext('2d');let seed=17;
@@ -15,13 +17,20 @@
       this.roomCache=document.createElement('canvas');this.roomKey='';
       new ResizeObserver(()=>this.resize()).observe(canvas);this.resize();
     }
+    loadImage(source,fallback,onload){
+      const image=new Image();image.decoding='async';image.onload=onload;
+      image.onerror=()=>{image.onerror=null;if(fallback)image.src=fallback;};
+      image.src=source;return image;
+    }
     get ready(){return this.plates.complete&&this.plates.naturalWidth>0&&this.weapon.complete&&this.weapon.naturalWidth>0&&this.tiles.length===6;}
     preparePlates(){
       // Bake a common key light into each transparent plate once, not every frame.
       for(let tile=0;tile<6;tile++){
         const image=document.createElement('canvas');image.width=256;image.height=384;const q=image.getContext('2d');
-        q.drawImage(this.plates,tile*256,0,256,384,0,0,256,384);
-        q.globalCompositeOperation='source-atop';const light=q.createLinearGradient(250,0,10,360);light.addColorStop(0,'#dcebf345');light.addColorStop(.45,'#d9e3df08');light.addColorStop(1,'#12223266');q.fillStyle=light;q.fillRect(0,0,256,384);q.globalCompositeOperation='source-over';
+        q.imageSmoothingEnabled=true;q.imageSmoothingQuality='high';
+        const sourceWidth=this.plates.naturalWidth/6;
+        q.drawImage(this.plates,tile*sourceWidth,0,sourceWidth,this.plates.naturalHeight,0,0,256,384);
+        q.globalCompositeOperation='source-atop';const light=q.createLinearGradient(250,0,10,360);light.addColorStop(0,'#dcebf31f');light.addColorStop(.45,'#d9e3df04');light.addColorStop(1,'#12223224');q.fillStyle=light;q.fillRect(0,0,256,384);q.globalCompositeOperation='source-over';
         this.tiles[tile]=image;
         for(const [list,color] of [[this.edges,'#252d27'],[this.shadows,'#090e13']]){
           const mask=document.createElement('canvas');mask.width=256;mask.height=384;const m=mask.getContext('2d');m.drawImage(image,0,0);m.globalCompositeOperation='source-in';m.fillStyle=color;m.fillRect(0,0,256,384);list[tile]=mask;
@@ -31,7 +40,7 @@
     prepareWeapon(){
       this.weaponTile=document.createElement('canvas');this.weaponTile.width=this.weapon.naturalWidth;this.weaponTile.height=this.weapon.naturalHeight;
       const q=this.weaponTile.getContext('2d');q.drawImage(this.weapon,0,0);q.globalCompositeOperation='source-atop';
-      const light=q.createLinearGradient(this.weaponTile.width,0,0,this.weaponTile.height);light.addColorStop(0,'#b7c8d326');light.addColorStop(.5,'#8f9b9008');light.addColorStop(1,'#10202e66');q.fillStyle=light;q.fillRect(0,0,this.weaponTile.width,this.weaponTile.height);
+      const light=q.createLinearGradient(this.weaponTile.width,0,0,this.weaponTile.height);light.addColorStop(0,'#b7c8d31a');light.addColorStop(.5,'#8f9b9004');light.addColorStop(1,'#10202e24');q.fillStyle=light;q.fillRect(0,0,this.weaponTile.width,this.weaponTile.height);
     }
     castShadow(a,e){
       const p=this.ctx,tile=e.drone?2:e.armor?1:0,mask=this.shadows[tile];if(!mask)return;
@@ -55,6 +64,22 @@
     }
     buildRoom(zone,cleared) {
       const p=this.ctx,w=this.width,h=this.height;
+      const environment=this.environments[zone]||this.environments[0];
+      if(environment?.complete&&environment.naturalWidth){
+        // Match the painted vanishing line to the same horizon as the upright plates.
+        // This entire crop and material pass is baked once, including on mobile.
+        const scale=Math.max(w/environment.naturalWidth,h/environment.naturalHeight),
+          width=environment.naturalWidth*scale,height=environment.naturalHeight*scale,
+          y=clamp((this.horizon??h*.43)-height*.42,h-height,0);
+        p.imageSmoothingEnabled=true;p.imageSmoothingQuality='high';
+        p.drawImage(environment,(w-width)/2,y,width,height);
+        const shade=p.createLinearGradient(0,0,0,h);
+        shade.addColorStop(0,'#07101014');shade.addColorStop(.55,'#18261e00');shade.addColorStop(1,'#0a100e26');
+        p.fillStyle=shade;p.fillRect(0,0,w,h);
+        if(cleared){p.fillStyle='#a7ba8308';p.fillRect(0,0,w,h);}
+        p.fillStyle=this.grain;p.globalAlpha=.12;p.fillRect(0,0,w,h);p.globalAlpha=1;
+        return;
+      }
       const themes=[['#121d25','#69716c','#414b47'],['#192125','#74716a','#4e5147'],['#101a22','#5c6969','#3c4949']],theme=themes[zone]||themes[0];
       const sky=p.createLinearGradient(0,0,0,h);sky.addColorStop(0,theme[0]);sky.addColorStop(.6,theme[1]);sky.addColorStop(1,'#1e2827');p.fillStyle=sky;p.fillRect(0,0,w,h);
       // Large poured-concrete slabs, expansion joints, oil and old tire tracks.
@@ -145,7 +170,7 @@
     }
     plate(tile,x,foot,height,opacity=1,tilt=0){
       if(!this.plates.naturalWidth)return;const p=this.ctx,width=height*256/384;
-      p.save();p.translate(x,foot);p.rotate(tilt);p.globalAlpha=opacity*Math.min(1,.81+height/this.height*.3);p.imageSmoothingEnabled=false;
+      p.save();p.translate(x,foot);p.rotate(tilt);p.globalAlpha=opacity*Math.min(1,.9+height/this.height*.15);p.imageSmoothingEnabled=true;p.imageSmoothingQuality='high';
       const edge=Math.max(1,Math.min(4,height*.012));
       if(this.edges[tile])p.drawImage(this.edges[tile],-width/2+edge,-height*370/384+edge,width,height);
       if(this.tiles[tile])p.drawImage(this.tiles[tile],-width/2,-height*370/384,width,height);
@@ -201,7 +226,7 @@
       items.sort((a,b)=>b.z-a.z).forEach(s=>s.draw());
       // Fine dust and haze separate the back wall from the silhouettes.
       p.fillStyle='#d5e1d42b';for(let i=0;i<17;i++){const drift=this.reducedMotion?0:state.time*.8,x=(i*137.7+(this.reducedMotion?0:Math.sin(state.time*.15+i)*18))%w,y=(i*57.3+drift)%h;p.fillRect(x,y,1,1);}
-      const vignette=p.createRadialGradient(w*.5,h*.5,h*.12,w*.5,h*.5,Math.max(w*.62,h*.8));vignette.addColorStop(0,'#08131a00');vignette.addColorStop(.6,'#08131a20');vignette.addColorStop(1,'#050d14d9');p.fillStyle=vignette;p.fillRect(0,0,w,h);
+      const vignette=p.createRadialGradient(w*.5,h*.5,h*.12,w*.5,h*.5,Math.max(w*.62,h*.8));vignette.addColorStop(0,'#08131a00');vignette.addColorStop(.6,'#08131a12');vignette.addColorStop(1,'#050d1480');p.fillStyle=vignette;p.fillRect(0,0,w,h);
       this.drawWeapon(state,now);
       if(state.mode==='briefing') {const fade=p.createLinearGradient(0,0,w,0);fade.addColorStop(0,'#141914ef');fade.addColorStop(.45,'#141914b8');fade.addColorStop(1,'#14191400');p.fillStyle=fade;p.fillRect(0,0,w,h);}
       if(state.phase==='enemy'){p.fillStyle='#8c46240b';p.fillRect(0,0,w,h);}
@@ -210,9 +235,9 @@
       if(!this.weapon.naturalWidth)return;const p=this.ctx,w=this.width,h=this.height;
       const recoil=clamp(1-(now-state.shotAt)/230,0,1),width=Math.min(w*.47,h*.8),height=width*500/640;
       const x=w*.61,y=h-height*.8+recoil*12;
-      p.imageSmoothingEnabled=false;p.drawImage(this.weaponTile||this.weapon,x,y,width,height);
+      p.imageSmoothingEnabled=true;p.imageSmoothingQuality='high';p.drawImage(this.weaponTile||this.weapon,x,y,width,height);
       if(now-state.shotAt<95){
-        const mx=x+width*.17,my=y+height*.14;p.save();p.translate(mx,my);p.fillStyle='#ffe3a0';p.shadowColor='#ffb855';p.shadowBlur=25;p.beginPath();p.moveTo(0,-31);p.lineTo(9,-10);p.lineTo(27,-18);p.lineTo(13,0);p.lineTo(30,14);p.lineTo(7,9);p.lineTo(-7,26);p.lineTo(-9,6);p.lineTo(-30,-4);p.lineTo(-10,-10);p.closePath();p.fill();p.restore();
+        const raster=this.weapon.src.includes('/generated/'),mx=x+width*(raster?.10:.17),my=y+height*(raster?.10:.14);p.save();p.translate(mx,my);p.fillStyle='#ffe3a0';p.shadowColor='#ffb855';p.shadowBlur=25;p.beginPath();p.moveTo(0,-31);p.lineTo(9,-10);p.lineTo(27,-18);p.lineTo(13,0);p.lineTo(30,14);p.lineTo(7,9);p.lineTo(-7,26);p.lineTo(-9,6);p.lineTo(-30,-4);p.lineTo(-10,-10);p.closePath();p.fill();p.restore();
         const target=this.layout(state.enemies).find(e=>e.id===(state.shotTarget??state.target));if(target){p.strokeStyle='#f8d89588';p.lineWidth=1;p.beginPath();p.moveTo(mx,my);p.lineTo(target.x,target.foot-target.height*.55);p.stroke();}
       }
     }

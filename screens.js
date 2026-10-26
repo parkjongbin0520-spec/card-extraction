@@ -137,7 +137,7 @@
       const x = Campaign.entity(this.save(), id),
         d = Campaign.definition(this.save(), id);
       if (!x || !d) return "";
-      return `<button class="inventory-tile ${this.selected === id || this.fusion.includes(id) ? "chosen" : ""}" data-entry="${id}" ${x.rarity ? `data-detail-card="${id}"` : ""} data-rank="${x.rarity || "item"}" ${select ? 'data-fuse="true"' : ""} draggable="true" aria-label="${esc(d.name)} 선택"><span class="move-grip" data-move-grip aria-hidden="true">⠿</span><svg><use href="#i-${d.icon || "cards"}"/></svg><strong>${esc(d.name)}</strong><small>${x.rarity ? (x.loan ? "대여 · " : "") + this.api.rarity(x.rarity) : d.kind === "material" ? `재료 ×${x.qty}` : d.kind === "weapon" ? "무기" : d.kind === "armor" ? "방어구" : d.kind === "backpack" ? "배낭" : "아이템"}</small></button>`;
+      return `<button class="inventory-tile ${this.selected === id || this.fusion.includes(id) ? "chosen" : ""}" data-entry="${id}" ${x.rarity ? `data-detail-card="${id}"` : ""} data-rank="${x.rarity || "item"}" ${select ? 'data-fuse="true"' : ""} draggable="true" aria-label="${esc(d.name)} 선택"><span class="move-grip" data-move-grip aria-hidden="true">⠿</span>${GameArt.visual(x.rarity ? "card" : "item", x.templateId, d.icon || "cards")}<strong>${esc(d.name)}</strong><small>${x.rarity ? (x.loan ? "대여 · " : "") + this.api.rarity(x.rarity) : d.kind === "material" ? `재료 ×${x.qty}` : d.kind === "weapon" ? "무기" : d.kind === "armor" ? "방어구" : d.kind === "backpack" ? "배낭" : "아이템"}</small></button>`;
     }
     inventory(location) {
       const c = this.c(),
@@ -157,7 +157,7 @@
         .map(([slot, name]) => {
           const id = this.c().equipment[slot],
             d = id && Campaign.definition(this.save(), id);
-          return `<button data-equip="${slot}"><small>${name}</small><strong>${esc(d?.name || "비어 있음")}</strong><span>${esc(d?.desc || "배낭에서 장비 선택 후 장착")}</span></button>`;
+          return `<button data-equip="${slot}">${d ? GameArt.visual("item", Campaign.entity(this.save(), id).templateId, d.icon, "equipment-art") : ""}<small>${name}</small><strong>${esc(d?.name || "비어 있음")}</strong><span>${esc(d?.desc || "배낭에서 장비 선택 후 장착")}</span></button>`;
         })
         .join("")}</div>`;
     }
@@ -184,7 +184,7 @@
               kind === "card"
                 ? 50 + CardLibrary.rarities.indexOf(d.rarity) * 35
                 : d.price;
-          return `<article><div><strong>${esc(d.name)}</strong><small>${esc(kind === "card" ? this.api.brief(CardLibrary.compile(id)) : d.desc)}</small></div><button data-buy="${kind}:${id}">${price} CR 구매</button></article>`;
+          return `<article>${GameArt.visual(kind, id, d.icon, "compact-art")}<div><strong>${esc(d.name)}</strong><small>${esc(kind === "card" ? this.api.brief(CardLibrary.compile(id)) : d.desc)}</small></div><button data-buy="${kind}:${id}">${price} CR 구매</button></article>`;
         })
         .join("")}</div></section><section><h3>상인 의뢰</h3>${Object.entries(
         Campaign.quests,

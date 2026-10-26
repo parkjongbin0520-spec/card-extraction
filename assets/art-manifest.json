@@ -1,0 +1,220 @@
+{
+  "version": 9,
+  "provenance": "Original images generated with imagegen; custom SVG UI authored for Cardkov. WebP derivatives encoded with ImageMagick.",
+  "files": [
+    {
+      "path": "assets/generated/actors/armored.webp",
+      "bytes": 26212
+    },
+    {
+      "path": "assets/generated/actors/drone.webp",
+      "bytes": 16124
+    },
+    {
+      "path": "assets/generated/actors/soldier.webp",
+      "bytes": 24286
+    },
+    {
+      "path": "assets/generated/base.webp",
+      "bytes": 257400
+    },
+    {
+      "path": "assets/generated/cards/breach.webp",
+      "bytes": 41772
+    },
+    {
+      "path": "assets/generated/cards/bulwark.webp",
+      "bytes": 35388
+    },
+    {
+      "path": "assets/generated/cards/burst.webp",
+      "bytes": 14778
+    },
+    {
+      "path": "assets/generated/cards/fieldAid.webp",
+      "bytes": 39040
+    },
+    {
+      "path": "assets/generated/cards/grenade.webp",
+      "bytes": 21804
+    },
+    {
+      "path": "assets/generated/cards/guard.webp",
+      "bytes": 42646
+    },
+    {
+      "path": "assets/generated/cards/heal.webp",
+      "bytes": 33360
+    },
+    {
+      "path": "assets/generated/cards/pierce.webp",
+      "bytes": 19408
+    },
+    {
+      "path": "assets/generated/cards/scan.webp",
+      "bytes": 22174
+    },
+    {
+      "path": "assets/generated/cards/shot.webp",
+      "bytes": 15450
+    },
+    {
+      "path": "assets/generated/cards/suppress.webp",
+      "bytes": 31610
+    },
+    {
+      "path": "assets/generated/cards/surge.webp",
+      "bytes": 24418
+    },
+    {
+      "path": "assets/generated/environment-0.webp",
+      "bytes": 354266
+    },
+    {
+      "path": "assets/generated/environment-1.webp",
+      "bytes": 343074
+    },
+    {
+      "path": "assets/generated/environment-2.webp",
+      "bytes": 292732
+    },
+    {
+      "path": "assets/generated/field-plates.webp",
+      "bytes": 117152
+    },
+    {
+      "path": "assets/generated/items/backpack.webp",
+      "bytes": 17064
+    },
+    {
+      "path": "assets/generated/items/carbine.webp",
+      "bytes": 14660
+    },
+    {
+      "path": "assets/generated/items/cash.webp",
+      "bytes": 22024
+    },
+    {
+      "path": "assets/generated/items/circuit.webp",
+      "bytes": 18290
+    },
+    {
+      "path": "assets/generated/items/grenade.webp",
+      "bytes": 13352
+    },
+    {
+      "path": "assets/generated/items/heavyVest.webp",
+      "bytes": 17876
+    },
+    {
+      "path": "assets/generated/items/largePack.webp",
+      "bytes": 19386
+    },
+    {
+      "path": "assets/generated/items/medkit.webp",
+      "bytes": 16598
+    },
+    {
+      "path": "assets/generated/items/pistol.webp",
+      "bytes": 11814
+    },
+    {
+      "path": "assets/generated/items/rifle.webp",
+      "bytes": 12664
+    },
+    {
+      "path": "assets/generated/items/scrap.webp",
+      "bytes": 22110
+    },
+    {
+      "path": "assets/generated/items/vest.webp",
+      "bytes": 18316
+    },
+    {
+      "path": "assets/generated/menu.webp",
+      "bytes": 240504
+    },
+    {
+      "path": "assets/generated/operator.webp",
+      "bytes": 4126
+    },
+    {
+      "path": "assets/generated/props/column.webp",
+      "bytes": 19014
+    },
+    {
+      "path": "assets/generated/props/crate.webp",
+      "bytes": 15610
+    },
+    {
+      "path": "assets/generated/props/terminal.webp",
+      "bytes": 20244
+    },
+    {
+      "path": "assets/generated/weapon.webp",
+      "bytes": 67052
+    }
+  ],
+  "vectorFiles": [
+    {
+      "path": "assets/ui/ballistic-nylon.svg",
+      "bytes": 368
+    },
+    {
+      "path": "assets/ui/favicon.svg",
+      "bytes": 736
+    },
+    {
+      "path": "assets/ui/field-icons.svg",
+      "bytes": 4280
+    },
+    {
+      "path": "assets/ui/field-paper.svg",
+      "bytes": 743
+    },
+    {
+      "path": "assets/ui/frame-epic.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/frame-legendary.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/frame-mystic.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/frame-normal.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/frame-rare.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/frame-unique.svg",
+      "bytes": 1030
+    },
+    {
+      "path": "assets/ui/hud-corners.svg",
+      "bytes": 659
+    },
+    {
+      "path": "assets/ui/insignia.svg",
+      "bytes": 684
+    },
+    {
+      "path": "assets/ui/reticle.svg",
+      "bytes": 355
+    },
+    {
+      "path": "assets/ui/slot-corners.svg",
+      "bytes": 275
+    },
+    {
+      "path": "assets/ui/worn-metal.svg",
+      "bytes": 4769
+    }
+  ]
+}
